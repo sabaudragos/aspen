@@ -1,4 +1,4 @@
-var serverUrl = "http://localhost:8080/api/";
+var serverUrl = "http://localhost:8090/api/";
 var discoveryUrl = serverUrl + "discovery";
 
 $(document).ready(function () {
@@ -10,10 +10,14 @@ $(document).ready(function () {
                 directoryToSearch: $("#directory-to-search-input").val()
             },
             error: function (result) {
-                $("#git-repositories-list").append("Error while discovering the directories. Status: "
-                    + result.status + " Message: " + result.responseJSON.error);
+                removeDirectoryDiscoveryError();
+                $("#directory-to-search").append(
+                    "<div id=\"error-message\" style=\"color:red\"><br />" +
+                    "Error while discovering the directories. Status: "
+                    + result.status + " Message: " + result.responseJSON.error + "</div>");
             },
             success: function (result) {
+                removeDirectoryDiscoveryError();
                 displayRepositories(result.Git_repositories);
                 displayMavenModules(result.Maven_modules);
             }
@@ -92,4 +96,10 @@ $(document).ready(function () {
             $("#directory-to-search-submit-button").click();
         }
     });
+
+    function removeDirectoryDiscoveryError(){
+        if ($("#error-message") !== null) {
+            $("#error-message").remove();
+        }
+    }
 });
