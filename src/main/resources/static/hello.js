@@ -7,7 +7,7 @@ $(document).ready(function () {
             url: discoveryUrl,
             type: "get",
             data: {
-                directoryToSearch: "/home/dragos/javadev"
+                directoryToSearch: $("#directory-to-search-input").val()
             },
             error: function (result) {
                 $("#git-repositories-list").append("Error while discovering the directories. Status: "
@@ -21,32 +21,75 @@ $(document).ready(function () {
     });
 
     function displayRepositories(gitRepositories) {
-        var gitRepositoriesSelector = $("#git-repositories-list");
+        var $gitRepositoriesSelector = $("#git-repositories");
+
+        $gitRepositoriesSelector.html(""); //clear the existing repository list
+
         if (gitRepositories === null) {
-            gitRepositoriesSelector.append("No repositories found");
+            $gitRepositoriesSelector.append("<p>Git repositories</p> No repositories found");
         } else {
-            for (i = 0; i < gitRepositories.length; i++){
-                gitRepositoriesSelector.append(
-                    "<div class=\"col-sm-12\">"
-                    + "<div>" + gitRepositories[i].name + "</div>" +
-                    + "<div>" + gitRepositories[i].path + "</div>" +
-                    "</div>");
-
-                // gitRepositoriesSelector.append(gitRepositories[i].name + "<br>");
+            $gitRepositoriesSelector.append(
+                "<p>Git repositories</p>" +
+                "<table class=\"table table-bordered table-hover\">" +
+                "<thead>" +
+                "<tr>" +
+                "<th>#</th>" +
+                "<th>Repository</th>" +
+                "<th>Status</th>" +
+                "</tr>" +
+                "</thead>" +
+                "<tbody id=\"git-repositories-list\">" +
+                "</tbody>" +
+                "</table>");
+            for (var i = 0; i < gitRepositories.length; i++){
+                $("#git-repositories-list").append(
+                    "<tr>" +
+                    "<td>" + (i+1) + "</td>" +
+                    "<td>" + gitRepositories[i].name + "</td>" +
+                    "<td></td>" +
+                    "</tr>"
+                );
             }
-
         }
     }
 
     function displayMavenModules(mvnModules) {
-        var mvnModulesSelector = $("#maven-modules-list");
+        var $mvnModulesSelector = $("#maven-modules");
+
+        $mvnModulesSelector.html(""); //clear the existing repository list
+
         if (mvnModules === null) {
-            mvnModulesSelector.append("No maven modules found");
+            $mvnModulesSelector.append("<p>Maven modules</p> No maven modules found");
         } else {
-            for (i = 0; i < mvnModules.length; i++){
-                mvnModulesSelector.append(mvnModules[i].name + "<br>");
+            $mvnModulesSelector.append(
+                "<p>Maven modules</p>" +
+                "<table class=\"table table-bordered table-hover\">" +
+                    "<thead>" +
+                        "<tr>" +
+                        "<th>#</th>" +
+                        "<th>Maven module</th>" +
+                        "<th>Status</th>" +
+                        "</tr>" +
+                    "</thead>" +
+                    "<tbody id=\"maven-modules-list\">" +
+                    "</tbody>" +
+                "</table>");
+            for (var i = 0; i < mvnModules.length; i++){
+                $("#maven-modules-list").append(
+                    "<tr>" +
+                    "<td>" + (i+1) + "</td>" +
+                    "<td>" + mvnModules[i].name + "</td>" +
+                    "<td></td>" +
+                    "</tr>"
+                );
             }
         }
 
     }
+
+    $("#directory-to-search-input").keyup(function(event){
+        if(event.keyCode === 13){
+            $("#directory-to-search-submit-button").click();
+        }
+    });
 });

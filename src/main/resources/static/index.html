@@ -18,27 +18,26 @@
     <![endif]-->
 </head>
 <body>
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-sm-12" id="directory-to-search">
-                <form id="directory-to-search-form">
-                    Directory to search
-                    <input type="text" name="directoryToSearch">
-                    <input type="button" value="Submit" id="directory-to-search-submit-button">
-                </form>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-sm-6" id="git-repositories" style="background-color:lavender;">
-                <p>Git repositories</p>
-                <div id="git-repositories-list"></div>
-            </div>
-            <div class="col-sm-6" id="maven-modules" style="background-color:lavenderblush;">
-                <p>Maven modules</p>
-                <div id="maven-modules-list"></div>
-            </div>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-12" id="directory-to-search">
+            <form id="directory-to-search-form">
+                Directory to search
+                <input type="text" name="directoryToSearch" id="directory-to-search-input">
+                <button type="button" class="btn btn-default" id="directory-to-search-submit-button">
+                    <span class="glyphicon glyphicon-search"></span> Search
+                </button>
+            </form>
+            <br /><br />
         </div>
     </div>
+    <div class="row">
+        <div class="col-sm-6" id="git-repositories">
+        </div>
+        <div class="col-sm-6" id="maven-modules">
+        </div>
+    </div>
+</div>
 
 <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
