@@ -4,7 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import xyz.codeark.dto.Directory;
 import xyz.codeark.rest.exceptions.AspenRestException;
-import xyz.codeark.service.DiscoveryConstants;
 import xyz.codeark.service.DiscoveryServiceImpl;
 
 import javax.annotation.Resource;
@@ -32,7 +31,7 @@ public class DirectoryDiscoveryResource {
             @NotNull @QueryParam("directoryToSearch") String directoryToSearch
     ) {
 
-        log.debug("Discovering directories");
+        log.debug("Discovering directories in {}", directoryToSearch);
         if (Files.notExists(Paths.get(directoryToSearch))) {
             throw new AspenRestException(RestConstants.INVALID_PATH, Response.Status.BAD_REQUEST);
         }

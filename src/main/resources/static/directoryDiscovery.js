@@ -5,19 +5,22 @@ $(document).ready(function () {
     $("#directory-to-search-submit-button").on("click", function () {
         $.ajax({
             url: discoveryUrl,
-            type: "get",
+            type: "GET",
             data: {
                 directoryToSearch: $("#directory-to-search-input").val()
             },
             error: function (result) {
-                removeDirectoryDiscoveryError();
-                $("#directory-to-search").append(
-                    "<div id=\"error-message\" style=\"color:red\"><br />" +
-                    "Error while discovering the directories. Status: "
-                    + result.status + " Message: " + result.responseJSON.error + "</div>");
+                removeMessageHolder();
+                $("#message-holder").append(
+                    "<span style=\"color:red\">" +
+                    "Error while discovering the directories. Status code: "
+                    + result.status + " (" + result.responseJSON.error + ")" +
+                    "</span>"
+                );
+                removeDiscoveredDirectories();
             },
             success: function (result) {
-                removeDirectoryDiscoveryError();
+                removeMessageHolder();
                 displayRepositories(result.Git_repositories);
                 displayMavenModules(result.Maven_modules);
             }
@@ -33,7 +36,7 @@ $(document).ready(function () {
             $gitRepositoriesSelector.append("<p>Git repositories</p> No repositories found");
         } else {
             $gitRepositoriesSelector.append(
-                "<p>Git repositories</p>" +
+                "<h3>Git repositories</h3>" +
                 "<table class=\"table table-bordered table-hover\">" +
                 "<thead>" +
                 "<tr>" +
@@ -50,7 +53,9 @@ $(document).ready(function () {
                     "<tr>" +
                     "<td>" + (i+1) + "</td>" +
                     "<td>" + gitRepositories[i].name + "</td>" +
-                    "<td></td>" +
+                    "<td>" +
+                        getGitRepositoryStatus(gitRepositories[i]) +
+                    "</td>" +
                     "</tr>"
                 );
             }
@@ -66,7 +71,7 @@ $(document).ready(function () {
             $mvnModulesSelector.append("<p>Maven modules</p> No maven modules found");
         } else {
             $mvnModulesSelector.append(
-                "<p>Maven modules</p>" +
+                "<h3>Maven modules</h3>" +
                 "<table class=\"table table-bordered table-hover\">" +
                     "<thead>" +
                         "<tr>" +
@@ -81,9 +86,14 @@ $(document).ready(function () {
             for (var i = 0; i < mvnModules.length; i++){
                 $("#maven-modules-list").append(
                     "<tr>" +
-                    "<td>" + (i+1) + "</td>" +
-                    "<td>" + mvnModules[i].name + "</td>" +
-                    "<td></td>" +
+                        "<td>" + (i+1) + "</td>" +
+                        "<td>" + mvnModules[i].name + "</td>" +
+                        "<td>" +
+                            "<button id=\"build-button-" + mvnModules[i].name + "\" type=\"button\" class=\"btn btn-primary btn-xs\" " +
+                                    "path=\"" + mvnModules[i].path +"\" title=\"mvn clean install -DskipTests\">" +
+                                "Build" +
+                            "</button>" +
+                        "</td>" +
                     "</tr>"
                 );
             }
@@ -97,9 +107,33 @@ $(document).ready(function () {
         }
     });
 
-    function removeDirectoryDiscoveryError(){
-        if ($("#error-message") !== null) {
-            $("#error-message").remove();
+    function removeMessageHolder(){
+        if ($("#message-holder") !== null) {
+            $("#message-holder").html("");
         }
+    }
+
+    function removeDiscoveredDirectories() {
+        if ($("#git-repositories-holder") !== null) {
+            $("#git-repositories").html("");
+        }
+        if ($("#maven-modules") !== null) {
+            $("#maven-modules").html("");
+        }
+    }
+
+    function getGitRepositoryStatus(gitRepository) {
+        if (gitRepository.name === "keystoneOLD"){
+            return "<button id=\"build-button-" + gitRepository.name + "\" type=\"button\" class=\"btn btn-danger btn-xs\" " +
+                "path=\"" + gitRepository.path + "\" title=\"Git repository is out of date\">" +
+                "Out of date" +
+                "</button>";
+        }
+
+        return "<button id=\"build-button-" + gitRepository.name + "\" type=\"button\" class=\"btn btn-success btn-xs\" " +
+            "path=\"" + gitRepository.path + "\" title=\"Git repository is up to date\">" +
+            "Up to date" +
+            "</button>";
+
     }
 });

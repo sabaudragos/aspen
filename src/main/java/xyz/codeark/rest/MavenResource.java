@@ -23,8 +23,8 @@ public class MavenResource {
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     public Response mvnBuild(
-            @QueryParam("lifecycle") MavenLifeCycle mavenLifeCycle,
-            @NotNull @QueryParam("mavenphase") MavenPhase mavenPhase,
+            @DefaultValue("CLEAN") @QueryParam("lifecycle") MavenLifeCycle mavenLifeCycle,
+            @DefaultValue("INSTALL") @NotNull @QueryParam("mavenphase") MavenPhase mavenPhase,
             @DefaultValue("true") @QueryParam("skiptests") Boolean skipTests,
             @FormParam("mvnModulePath") String mvnModulePath) {
 

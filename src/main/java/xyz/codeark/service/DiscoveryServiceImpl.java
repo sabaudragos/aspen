@@ -26,7 +26,7 @@ public class DiscoveryServiceImpl implements DiscoveryService {
     @Override
     public Map<String, List<Directory>> discoverRepositoriesAndMvnModules(String rootDirectory,
                                                                           int maxDirectoryDepth) {
-        log.info("Discovering mvn modules and git repositories in ", rootDirectory);
+        log.info("Discovering mvn modules and git repositories in {}, max depth {}", rootDirectory, maxDirectoryDepth);
         List<Directory> mavenModuleList = new ArrayList<>();
         List<Directory> repositoryList = new ArrayList<>();
         //TODO performance might be improved if the .git directory is skipped
