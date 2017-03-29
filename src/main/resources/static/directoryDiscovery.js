@@ -2,6 +2,9 @@ var serverUrl = "http://localhost:8090/api/";
 var discoveryUrl = serverUrl + "discovery";
 
 $(document).ready(function () {
+    // initialize all tooltips -- NOT WORKING
+    $("[data-toggle=tooltip]").tooltip();
+
     $("#directory-to-search-submit-button").on("click", function () {
         $.ajax({
             url: discoveryUrl,
@@ -23,6 +26,7 @@ $(document).ready(function () {
                 removeMessageHolder();
                 displayRepositories(result.Git_repositories);
                 displayMavenModules(result.Maven_modules);
+                // trigger git up to date check for repositories
             }
         });
     });
@@ -89,8 +93,12 @@ $(document).ready(function () {
                         "<td>" + (i+1) + "</td>" +
                         "<td>" + mvnModules[i].name + "</td>" +
                         "<td>" +
-                            "<button id=\"build-button-" + mvnModules[i].name + "\" type=\"button\" class=\"btn btn-primary btn-xs\" " +
-                                    "path=\"" + mvnModules[i].path +"\" title=\"mvn clean install -DskipTests\">" +
+                            "<button type=\"button\" class=\"btn btn-primary btn-xs mvn-update-button\" " +
+                                "path=\"" + mvnModules[i].path +"\" " +
+                                "data-toggle=\"tooltip\" " +
+                                "data-placement=\"right\" " +
+                                "title=\"Click to update!\"" +
+                                "title=\"mvn clean install -DskipTests\">" +
                                 "Build" +
                             "</button>" +
                         "</td>" +
@@ -124,16 +132,21 @@ $(document).ready(function () {
 
     function getGitRepositoryStatus(gitRepository) {
         if (gitRepository.name === "keystoneOLD"){
-            return "<button id=\"build-button-" + gitRepository.name + "\" type=\"button\" class=\"btn btn-danger btn-xs\" " +
-                "path=\"" + gitRepository.path + "\" title=\"Git repository is out of date\">" +
-                "Out of date" +
-                "</button>";
+            return "<button type=\"button\" class=\"btn btn-danger btn-xs git-update-button\" " +
+                        "path=\"" + gitRepository.path + "\" " +
+                        "data-toggle=\"tooltip\" " +
+                        "data-placement=\"right\" " +
+                        "title=\"Click to update!\">" +
+                        "Out of date" +
+                    "</button>";
         }
 
-        return "<button id=\"build-button-" + gitRepository.name + "\" type=\"button\" class=\"btn btn-success btn-xs\" " +
-            "path=\"" + gitRepository.path + "\" title=\"Git repository is up to date\">" +
-            "Up to date" +
-            "</button>";
-
+        return "<button type=\"button\" class=\"btn btn-success btn-xs git-update-button\" " +
+                    "path=\"" + gitRepository.path + "\" " +
+                    "data-toggle=\"tooltip\" " +
+                    "data-placement=\"right\" " +
+                    "title=\"Click to re-check!\">" +
+                    "Up to date" +
+                "</button>";
     }
 });
