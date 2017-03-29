@@ -24,11 +24,11 @@ public class DiscoveryServiceImpl implements DiscoveryService {
     private final String GIT_DIRECTORY = ".git";
 
     @Override
-    public Map<String, List<Directory>> discoverRepositoriesAndMvnModules(String rootDirectory,
+    public Map<String, Set<Directory>> discoverRepositoriesAndMvnModules(String rootDirectory,
                                                                           int maxDirectoryDepth) {
         log.info("Discovering mvn modules and git repositories in {}, max depth {}", rootDirectory, maxDirectoryDepth);
-        List<Directory> mavenModuleList = new ArrayList<>();
-        List<Directory> repositoryList = new ArrayList<>();
+        Set<Directory> mavenModuleList = new TreeSet<>();
+        Set<Directory> repositoryList = new TreeSet<>();
         //TODO performance might be improved if the .git directory is skipped
         try (Stream<Path> paths = Files.walk(Paths.get(rootDirectory), maxDirectoryDepth)) {
             paths.forEach(filePath -> {
@@ -54,7 +54,7 @@ public class DiscoveryServiceImpl implements DiscoveryService {
                     Response.Status.INTERNAL_SERVER_ERROR);
         }
 
-        Map<String, List<Directory>> repositoriesAndMvnModules = new HashMap<>();
+        Map<String, Set<Directory>> repositoriesAndMvnModules = new HashMap<>();
         repositoriesAndMvnModules.put(DiscoveryConstants.MAVEN_MODULE, mavenModuleList);
         repositoriesAndMvnModules.put(DiscoveryConstants.GIT_REPO, repositoryList);
 

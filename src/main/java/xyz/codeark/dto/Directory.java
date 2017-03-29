@@ -10,7 +10,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class Directory {
+public class Directory implements Comparable<Directory>{
     private String path;
     private String name;
 
@@ -19,5 +19,10 @@ public class Directory {
         return "Directory{" +
                 "name='" + name + '\'' +
                 '}';
+    }
+
+    @Override
+    public int compareTo(Directory o) {
+        return this.name.compareTo(o.name);
     }
 }

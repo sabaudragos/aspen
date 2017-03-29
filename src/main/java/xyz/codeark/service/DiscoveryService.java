@@ -3,15 +3,15 @@ package xyz.codeark.service;
 import org.springframework.stereotype.Service;
 import xyz.codeark.dto.Directory;
 
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Service class used to discover the repositories and maven modules. It's desirable to
  * discover the git repositories and maven modules with a single call. Making two calls
  * will not only be less resource efficient but it could lead to perceived inconsistencies
- * (e.g. the end user will be shown an up to date maven modules list but an out of date
- * git repositories list)
+ * (e.g. the end user will be shown an up to date maven modules set but an out of date
+ * git repositories set)
  */
 @Service
 public interface DiscoveryService {
@@ -26,6 +26,6 @@ public interface DiscoveryService {
      *                          it will not search the subdirectories
      * @return a map of directories (repositories and maven modules)
      */
-    Map<String, List<Directory>> discoverRepositoriesAndMvnModules(String directoryToSearch,
-                                                                   int maxDirectoryDepth);
+    Map<String, Set<Directory>> discoverRepositoriesAndMvnModules(String directoryToSearch,
+                                                                  int maxDirectoryDepth);
 }

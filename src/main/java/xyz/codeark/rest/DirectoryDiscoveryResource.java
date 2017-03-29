@@ -13,8 +13,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Slf4j
 @Component
@@ -36,7 +36,7 @@ public class DirectoryDiscoveryResource {
             throw new AspenRestException(RestConstants.INVALID_PATH, Response.Status.BAD_REQUEST);
         }
 
-        Map<String, List<Directory>> repositoriesAndModules =
+        Map<String, Set<Directory>> repositoriesAndModules =
                 discoveryServiceImpl.discoverRepositoriesAndMvnModules(directoryToSearch, maxDirectoryDepth);
 
         return Response.ok()
