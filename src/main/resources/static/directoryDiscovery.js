@@ -1,5 +1,6 @@
 var serverUrl = "http://localhost:8090/api/";
 var discoveryUrl = serverUrl + "discovery";
+var mvnUrl = serverUrl + "mvn";
 
 $(document).ready(function () {
     // initialize all tooltips -- NOT WORKING
@@ -31,6 +32,27 @@ $(document).ready(function () {
         });
     });
 
+
+    $(document).on("click", ".mvn-update-button", function () {
+        $mvnButton = $(this);
+        $.ajax({
+            url: mvnUrl,
+            type: "POST",
+            data: {
+                mvnModulePath: $(this).attr("path")
+            },
+
+            statusCode: {
+                200: function (response) {
+                    displayMvnSuccess($mvnButton);
+                },
+                400: function (response) {
+                    displayMvnFailure($mvnButton, response);
+                }
+            }
+        });
+    });
+
     function displayRepositories(gitRepositories) {
         var $gitRepositoriesSelector = $("#git-repositories");
 
@@ -52,13 +74,13 @@ $(document).ready(function () {
                 "<tbody id=\"git-repositories-list\">" +
                 "</tbody>" +
                 "</table>");
-            for (var i = 0; i < gitRepositories.length; i++){
+            for (var i = 0; i < gitRepositories.length; i++) {
                 $("#git-repositories-list").append(
                     "<tr>" +
-                    "<td>" + (i+1) + "</td>" +
+                    "<td>" + (i + 1) + "</td>" +
                     "<td>" + gitRepositories[i].name + "</td>" +
                     "<td>" +
-                        getGitRepositoryStatus(gitRepositories[i]) +
+                    getGitRepositoryStatus(gitRepositories[i]) +
                     "</td>" +
                     "</tr>"
                 );
@@ -77,31 +99,30 @@ $(document).ready(function () {
             $mvnModulesSelector.append(
                 "<h3>Maven modules</h3>" +
                 "<table class=\"table table-bordered table-hover\">" +
-                    "<thead>" +
-                        "<tr>" +
-                        "<th>#</th>" +
-                        "<th>Maven module</th>" +
-                        "<th>Status</th>" +
-                        "</tr>" +
-                    "</thead>" +
-                    "<tbody id=\"maven-modules-list\">" +
-                    "</tbody>" +
+                "<thead>" +
+                "<tr>" +
+                "<th>#</th>" +
+                "<th>Maven module</th>" +
+                "<th>Status</th>" +
+                "</tr>" +
+                "</thead>" +
+                "<tbody id=\"maven-modules-list\">" +
+                "</tbody>" +
                 "</table>");
-            for (var i = 0; i < mvnModules.length; i++){
+            for (var i = 0; i < mvnModules.length; i++) {
                 $("#maven-modules-list").append(
                     "<tr>" +
-                        "<td>" + (i+1) + "</td>" +
-                        "<td>" + mvnModules[i].name + "</td>" +
-                        "<td>" +
-                            "<button type=\"button\" class=\"btn btn-primary btn-xs mvn-update-button\" " +
-                                "path=\"" + mvnModules[i].path +"\" " +
-                                "data-toggle=\"tooltip\" " +
-                                "data-placement=\"right\" " +
-                                "title=\"Click to update!\"" +
-                                "title=\"mvn clean install -DskipTests\">" +
-                                "Build" +
-                            "</button>" +
-                        "</td>" +
+                    "<td>" + (i + 1) + "</td>" +
+                    "<td>" + mvnModules[i].name + "</td>" +
+                    "<td>" +
+                    "<button type=\"button\" class=\"btn btn-primary btn-xs mvn-update-button\" " +
+                    "path=\"" + mvnModules[i].path + "\" " +
+                    "data-toggle=\"tooltip\" " +
+                    "data-placement=\"right\" " +
+                    "title=\"Click to build. No tests!\">" +
+                    "Build" +
+                    "</button>" +
+                    "</td>" +
                     "</tr>"
                 );
             }
@@ -109,13 +130,13 @@ $(document).ready(function () {
 
     }
 
-    $("#directory-to-search-input").keyup(function(event){
-        if(event.keyCode === 13){
+    $("#directory-to-search-input").keyup(function (event) {
+        if (event.keyCode === 13) {
             $("#directory-to-search-submit-button").click();
         }
     });
 
-    function removeMessageHolder(){
+    function removeMessageHolder() {
         if ($("#message-holder") !== null) {
             $("#message-holder").html("");
         }
@@ -131,22 +152,42 @@ $(document).ready(function () {
     }
 
     function getGitRepositoryStatus(gitRepository) {
-        if (gitRepository.name === "keystoneOLD"){
+        if (gitRepository.name === "keystoneOLD") {
             return "<button type=\"button\" class=\"btn btn-danger btn-xs git-update-button\" " +
-                        "path=\"" + gitRepository.path + "\" " +
-                        "data-toggle=\"tooltip\" " +
-                        "data-placement=\"right\" " +
-                        "title=\"Click to update!\">" +
-                        "Out of date" +
-                    "</button>";
+                "path=\"" + gitRepository.path + "\" " +
+                "data-toggle=\"tooltip\" " +
+                "data-placement=\"right\" " +
+                "title=\"Click to update!\">" +
+                "Out of date" +
+                "</button>";
         }
 
         return "<button type=\"button\" class=\"btn btn-success btn-xs git-update-button\" " +
-                    "path=\"" + gitRepository.path + "\" " +
-                    "data-toggle=\"tooltip\" " +
-                    "data-placement=\"right\" " +
-                    "title=\"Click to re-check!\">" +
-                    "Up to date" +
-                "</button>";
+            "path=\"" + gitRepository.path + "\" " +
+            "data-toggle=\"tooltip\" " +
+            "data-placement=\"right\" " +
+            "title=\"Click to re-check!\">" +
+            "Up to date" +
+            "</button>";
+    }
+
+    function displayMvnSuccess($mvnButton){
+        // remove animationand  add build button
+        // then add success glyphicon
+        $mvnButton.after("<span class=\"glyphicon glyphicon-ok label-success\" aria-hidden=\"true\"></span>");
+    }
+
+    function displayMvnFailure($mvnButton, response){
+        // remove animation add build button
+        // then add failure glyphicon
+
+        removeMessageHolder();
+        $("#message-holder").append(
+            "<span style=\"color:red\">" +
+            "Error while building module. Status code: "
+            + response.status + " (" + response.responseJSON.error + ")" +
+            "</span>"
+        );
+        $mvnButton.append("<span class=\"glyphicon glyphicon-remove glyphicon-align-left\" aria-hidden=\"true\"></span>");
     }
 });

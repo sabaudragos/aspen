@@ -45,7 +45,7 @@ public class MavenServiceImpl implements MavenService {
     }
 
     private InvocationResult executeMavenCommand(List<String> goalList, String mvnModulePath) {
-        log.info("Executing maven command for module: ", mvnModulePath);
+        log.info("Executing maven command for module: {}", mvnModulePath);
 
         InvocationRequest request = new DefaultInvocationRequest();
         request.setPomFile(new File(mvnModulePath + "/pom.xml"));
@@ -58,7 +58,7 @@ public class MavenServiceImpl implements MavenService {
         try {
             invocationResult = invoker.execute(request);
         } catch (MavenInvocationException e) {
-            log.error("Maven operation failed.", e);
+            log.error("Maven operation failed. {}", e);
         }
 
         log.info("Maven command was executed successfully");
