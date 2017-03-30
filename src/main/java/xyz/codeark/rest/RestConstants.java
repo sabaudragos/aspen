@@ -22,5 +22,6 @@ public class RestConstants {
      * Maven related constants
      */
     public static final String MAVEN_SUCCESS = "Maven executed successfully";
-    public static final String MAVEN_FAILURE = "Maven execution failed with code:";
+    public static final String MAVEN_FAILURE = "Maven execution failed";
+    public static final String INVALID_MVN_MODULE_PATH = "Invalid maven module path";
 }

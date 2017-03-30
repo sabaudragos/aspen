@@ -3,6 +3,9 @@ var discoveryUrl = serverUrl + "discovery";
 var mvnUrl = serverUrl + "mvn";
 
 $(document).ready(function () {
+
+    var MAVEN_SUCCESS = "Maven executed successfully";
+    var MAVEN_FAILURE = "Maven execution failed";
     // initialize all tooltips -- NOT WORKING
     $("[data-toggle=tooltip]").tooltip();
 
@@ -14,17 +17,12 @@ $(document).ready(function () {
                 directoryToSearch: $("#directory-to-search-input").val()
             },
             error: function (result) {
-                removeMessageHolder();
-                $("#message-holder").append(
-                    "<span style=\"color:red\">" +
-                    "Error while discovering the directories. Status code: "
-                    + result.status + " (" + result.responseJSON.error + ")" +
-                    "</span>"
-                );
+                removeExistingMessage();
+                displayErrorMessage("Error while discovering the directories. Message: " + result.responseText);
                 removeDiscoveredDirectories();
             },
             success: function (result) {
-                removeMessageHolder();
+                removeExistingMessage();
                 displayRepositories(result.Git_repositories);
                 displayMavenModules(result.Maven_modules);
                 // trigger git up to date check for repositories
@@ -35,19 +33,32 @@ $(document).ready(function () {
 
     $(document).on("click", ".mvn-update-button", function () {
         $mvnButton = $(this);
+
+        // remove existing success/failure glyph
+        if ($mvnButton.next('span').length > 0) {
+            $mvnButton.next('span').remove();
+        }
+
         $.ajax({
             url: mvnUrl,
             type: "POST",
             data: {
-                mvnModulePath: $(this).attr("path")
+                mvnModulePath: $mvnButton.attr("path")
             },
 
             statusCode: {
                 200: function (response) {
-                    displayMvnSuccess($mvnButton);
+                    var responseMessage = response.responseText;
+
+                    if (responseMessage === MAVEN_SUCCESS) {
+                        displayMvnSuccess($mvnButton);
+                    } else if (responseMessage === MAVEN_FAILURE) {
+                        displayMvnFailure($mvnButton, response);
+                    }
                 },
                 400: function (response) {
-                    displayMvnFailure($mvnButton, response);
+                    removeExistingMessage();
+                    displayErrorMessage(response.responseText + ". Module name: " + $mvnButton.parent().prev().text());
                 }
             }
         });
@@ -136,7 +147,7 @@ $(document).ready(function () {
         }
     });
 
-    function removeMessageHolder() {
+    function removeExistingMessage() {
         if ($("#message-holder") !== null) {
             $("#message-holder").html("");
         }
@@ -171,23 +182,26 @@ $(document).ready(function () {
             "</button>";
     }
 
-    function displayMvnSuccess($mvnButton){
-        // remove animationand  add build button
+    function displayMvnSuccess($mvnButton) {
+        // remove animation if any and add build button
         // then add success glyphicon
-        $mvnButton.after("<span class=\"glyphicon glyphicon-ok label-success\" aria-hidden=\"true\"></span>");
+        if ($mvnButton.next('span').length > 0) {
+            $mvnButton.next('span').remove();
+        }
+
+        $mvnButton.after("<span class=\"glyphicon glyphicon-ok glyph-success\" aria-hidden=\"true\"></span>");
     }
 
-    function displayMvnFailure($mvnButton, response){
+    function displayMvnFailure($mvnButton, response) {
         // remove animation add build button
         // then add failure glyphicon
+        $mvnButton.after("<span class=\"glyphicon glyphicon-remove glyph-failure\" aria-hidden=\"true\"></span>");
+    }
 
-        removeMessageHolder();
+    function displayErrorMessage(message) {
         $("#message-holder").append(
-            "<span style=\"color:red\">" +
-            "Error while building module. Status code: "
-            + response.status + " (" + response.responseJSON.error + ")" +
+            "<span class=\"error-message\">" + message +
             "</span>"
         );
-        $mvnButton.append("<span class=\"glyphicon glyphicon-remove glyphicon-align-left\" aria-hidden=\"true\"></span>");
     }
 });

@@ -5,10 +5,7 @@ import org.apache.maven.shared.invoker.*;
 import org.springframework.stereotype.Service;
 import xyz.codeark.maven.MavenLifeCycle;
 import xyz.codeark.maven.MavenPhase;
-import xyz.codeark.rest.RestConstants;
-import xyz.codeark.rest.exceptions.AspenRestException;
 
-import javax.ws.rs.core.Response;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,10 +16,10 @@ public class MavenServiceImpl implements MavenService {
     private static final String SKIP_TESTS = "-DskipTests";
 
     @Override
-    public boolean install(MavenLifeCycle mavenLifeCycle,
-                           MavenPhase mavenPhase,
-                           Boolean skipTests,
-                           String mvnModulePath) {
+    public boolean build(MavenLifeCycle mavenLifeCycle,
+                         MavenPhase mavenPhase,
+                         Boolean skipTests,
+                         String mvnModulePath) {
 
         List<String> goalList = new ArrayList<>();
         if (skipTests) {
@@ -33,15 +30,14 @@ public class MavenServiceImpl implements MavenService {
             goalList.add(mavenLifeCycle.toString());
         }
 
+        if (mavenPhase != null) {
+            goalList.add(mavenPhase.toString());
+        }
+
         InvocationResult invocationResult =
                 executeMavenCommand(goalList, mvnModulePath);
 
-        if (invocationResult.getExitCode() == 0) {
-            return true;
-        } else {
-            throw new AspenRestException(RestConstants.MAVEN_FAILURE + invocationResult.getExitCode(),
-                    Response.Status.OK);
-        }
+        return invocationResult.getExitCode() == 0;
     }
 
     private InvocationResult executeMavenCommand(List<String> goalList, String mvnModulePath) {

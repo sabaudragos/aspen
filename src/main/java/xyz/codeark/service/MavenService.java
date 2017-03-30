@@ -11,7 +11,7 @@ import xyz.codeark.maven.MavenPhase;
 public interface MavenService {
 
     /**
-     * It install the maven module. It can include 'clean'.
+     * It builds the maven module. It can include 'clean'.
      *
      * @param mavenLifeCycle added for the clean option
      * @param mavenPhase     one of the 7 maven phases
@@ -19,8 +19,8 @@ public interface MavenService {
      * @param mvnModulePath  path to the maven module
      * @return true if the execution was successful, false otherwise
      */
-    boolean install(MavenLifeCycle mavenLifeCycle,
-                    MavenPhase mavenPhase,
-                    Boolean skipTests,
-                    String mvnModulePath);
+    boolean build(MavenLifeCycle mavenLifeCycle,
+                  MavenPhase mavenPhase,
+                  Boolean skipTests,
+                  String mvnModulePath);
 }

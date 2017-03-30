@@ -1,3 +1,11 @@
-.label-success {
+.glyph-success {
     color: #5cb85c;
+}
+
+.glyph-failure {
+    color: #c9302c;
+}
+
+.error-message {
+    color: #c9302c;
 }
