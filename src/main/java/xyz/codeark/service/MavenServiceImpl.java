@@ -5,7 +5,9 @@ import org.apache.maven.shared.invoker.*;
 import org.springframework.stereotype.Service;
 import xyz.codeark.maven.MavenLifeCycle;
 import xyz.codeark.maven.MavenPhase;
+import xyz.codeark.rest.exceptions.AspenRestException;
 
+import javax.ws.rs.core.Response;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +16,9 @@ import java.util.List;
 @Service
 public class MavenServiceImpl implements MavenService {
     private static final String SKIP_TESTS = "-DskipTests";
+
+    private static final String UNSUPPORTED_OPERATING_SYSTEM = "Unsupported operating system";
+    private static final String MVN_PATH_NOT_FOUND_IN_PATH_VARIABLE = "Maven not found in path variable";
 
     @Override
     public boolean build(MavenLifeCycle mavenLifeCycle,
@@ -49,7 +54,7 @@ public class MavenServiceImpl implements MavenService {
 
         Invoker invoker = new DefaultInvoker();
         // TODO should take the maven home from the env variable
-        invoker.setMavenHome(new File("/usr/share/maven"));
+        invoker.setMavenHome(new File(getMvnPath()));
         InvocationResult invocationResult = null;
         try {
             invocationResult = invoker.execute(request);
@@ -59,5 +64,27 @@ public class MavenServiceImpl implements MavenService {
 
         log.info("Maven command was executed successfully");
         return invocationResult;
+    }
+
+    private String getMvnPath() {
+        if (System.getProperty("os.name").contains("Linux")) {
+            return extractPathVariable(System.getenv().get("PATH").split(":"));
+        } else if (System.getProperty("os.name").contains("Win")) {
+            return extractPathVariable(System.getenv().get("Path").split(";"));
+        }
+
+        log.error("Unsupported operating system");
+        throw new AspenRestException(UNSUPPORTED_OPERATING_SYSTEM, Response.Status.BAD_REQUEST);
+    }
+
+    private String extractPathVariable(String[] pathVariables) {
+        for (String pathVariable : pathVariables) {
+            if (pathVariable.contains("maven") || pathVariable.contains("mvn")) {
+                return pathVariable;
+            }
+        }
+
+        log.error("Maven path not found in the Path variable");
+        throw new AspenRestException(MVN_PATH_NOT_FOUND_IN_PATH_VARIABLE, Response.Status.BAD_REQUEST);
     }
 }
