@@ -1,6 +1,7 @@
 var serverUrl = "http://localhost:8090/api/";
 var discoveryUrl = serverUrl + "discovery";
 var mvnUrl = serverUrl + "mvn";
+var gitUrl = serverUrl + "git";
 
 $(document).ready(function () {
 
@@ -32,18 +33,18 @@ $(document).ready(function () {
 
 
     $(document).on("click", ".mvn-update-button", function () {
-        $mvnButton = $(this);
+        $gitButton = $(this);
 
         // remove existing success/failure glyph
-        if ($mvnButton.next('span').length > 0) {
-            $mvnButton.next('span').remove();
+        if ($gitButton.next('span').length > 0) {
+            $gitButton.next('span').remove();
         }
 
         $.ajax({
             url: mvnUrl,
             type: "POST",
             data: {
-                mvnModulePath: $mvnButton.attr("path")
+                mvnModulePath: $gitButton.attr("path")
             },
 
             statusCode: {
@@ -51,14 +52,44 @@ $(document).ready(function () {
                     var responseMessage = response.responseText;
 
                     if (responseMessage === MAVEN_SUCCESS) {
-                        displayMvnSuccess($mvnButton);
+                        displayMvnSuccess($gitButton);
                     } else if (responseMessage === MAVEN_FAILURE) {
-                        displayMvnFailure($mvnButton, response);
+                        displayMvnFailure($gitButton, response);
                     }
                 },
                 400: function (response) {
                     removeExistingMessage();
-                    displayErrorMessage(response.responseText + ". Module name: " + $mvnButton.parent().prev().text());
+                    displayErrorMessage(response.responseText + ". Module name: " + $gitButton.parent().prev().text());
+                }
+            }
+        });
+    });
+
+    $(document).on("click", ".git-update-button", function () {
+        $gitButton = $(this);
+
+        $.ajax({
+            url : gitUrl,
+            type: "POST",
+            data: JSON.stringify({
+                mvnModulePath: $gitButton.attr("path")
+            }),
+            contentType : "application/json; charset=utf-8",
+            dataType    : "json",
+
+            statusCode: {
+                200: function (response) {
+                    var responseMessage = response.responseText;
+
+                    if (responseMessage === MAVEN_SUCCESS) {
+                        displayMvnSuccess($gitButton);
+                    } else if (responseMessage === MAVEN_FAILURE) {
+                        displayMvnFailure($gitButton, response);
+                    }
+                },
+                400: function (response) {
+                    removeExistingMessage();
+                    displayErrorMessage(response.responseText + ". Module name: " + $gitButton.parent().prev().text());
                 }
             }
         });
@@ -185,17 +216,17 @@ $(document).ready(function () {
     function displayMvnSuccess($mvnButton) {
         // remove animation if any and add build button
         // then add success glyphicon
-        if ($mvnButton.next('span').length > 0) {
-            $mvnButton.next('span').remove();
+        if ($gitButton.next('span').length > 0) {
+            $gitButton.next('span').remove();
         }
 
-        $mvnButton.after("<span class=\"glyphicon glyphicon-ok glyph-success\" aria-hidden=\"true\"></span>");
+        $gitButton.after("<span class=\"glyphicon glyphicon-ok glyph-success\" aria-hidden=\"true\"></span>");
     }
 
     function displayMvnFailure($mvnButton, response) {
         // remove animation add build button
         // then add failure glyphicon
-        $mvnButton.after("<span class=\"glyphicon glyphicon-remove glyph-failure\" aria-hidden=\"true\"></span>");
+        $gitButton.after("<span class=\"glyphicon glyphicon-remove glyph-failure\" aria-hidden=\"true\"></span>");
     }
 
     function displayErrorMessage(message) {

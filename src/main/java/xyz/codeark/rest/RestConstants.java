@@ -24,4 +24,7 @@ public class RestConstants {
     public static final String MAVEN_SUCCESS = "Maven executed successfully";
     public static final String MAVEN_FAILURE = "Maven execution failed";
     public static final String INVALID_MVN_MODULE_PATH = "Invalid maven module path";
+    public static final String INVALID_GIT_REPOSITORY_PATH = "Invalid git repository path";
+    public static final String GIT_PULL_FAILED = "Git pull failed";
+    public static final String GIT_SUCCESS = "Git executed successfully";
 }
