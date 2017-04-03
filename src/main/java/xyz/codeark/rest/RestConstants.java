@@ -27,4 +27,6 @@ public class RestConstants {
     public static final String INVALID_GIT_REPOSITORY_PATH = "Invalid git repository path";
     public static final String GIT_PULL_FAILED = "Git pull failed";
     public static final String GIT_SUCCESS = "Git executed successfully";
+    public static final String UNSUPPORTED_OPERATING_SYSTEM = "Unsupported operating system";
+    public static final String MVN_PATH_NOT_FOUND_IN_PATH_VARIABLE = "Maven not found in path variable";
 }
