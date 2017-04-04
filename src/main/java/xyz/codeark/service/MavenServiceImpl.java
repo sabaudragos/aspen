@@ -78,6 +78,10 @@ public class MavenServiceImpl implements MavenService {
     private String extractPathVariable(String[] pathVariables) {
         for (String pathVariable : pathVariables) {
             if (pathVariable.contains("maven") || pathVariable.contains("mvn")) {
+                if (pathVariable.contains("bin")){
+                    return pathVariable.substring(0, pathVariable.length() - 3);
+                }
+
                 return pathVariable;
             }
         }
