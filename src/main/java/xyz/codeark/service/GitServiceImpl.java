@@ -35,7 +35,7 @@ public class GitServiceImpl implements GitService {
                 stash = createStash(git);
             }
 
-            pullResult = git.pull().setRebase(true).call();
+            pullResult = git.pull().setRebase(userRebase).call();
 
             if (stash != null){
                 log.info("Applying stash");
