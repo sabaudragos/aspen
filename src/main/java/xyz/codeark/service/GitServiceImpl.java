@@ -12,8 +12,9 @@ import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.transport.FetchResult;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 @Slf4j
 @Service
@@ -21,7 +22,7 @@ public class GitServiceImpl implements GitService {
 
     @Override
     public boolean pull(String repositoryPath, Boolean userRebase) {
-        log.info("Updating repository: ", repositoryPath);
+        log.info("Updating repository: {}", repositoryPath);
 
         Git git = getGitInstance(repositoryPath);
         PullResult pullResult = null;
@@ -47,16 +48,12 @@ public class GitServiceImpl implements GitService {
         }
 
         // should both the rebase and fetch results be treated?
-        if (pullResult.getRebaseResult().getStatus().isSuccessful()) {
-            return true;
-        } else {
-            return false;
-        }
+        return pullResult.getRebaseResult().getStatus().isSuccessful();
     }
 
     @Override
     public RevCommit createStash(Git git) {
-        log.info("Git repo {} has uncommitted changes. Creating a stash");
+        log.info("Git repo {} has uncommitted changes. Creating a stash", git.getRepository());
         RevCommit revCommit = null;
         try {
             revCommit = git.stashCreate().call();
@@ -75,6 +72,7 @@ public class GitServiceImpl implements GitService {
         Git git = getGitInstance(repositoryPath);
         try {
             FetchResult fetchResult = git.fetch().call();
+            fetchResult.getMessages();
         } catch (GitAPIException e) {
             e.printStackTrace();
         }
@@ -82,10 +80,12 @@ public class GitServiceImpl implements GitService {
     }
 
     private Git getGitInstance(String repositoryPath) {
+        // the .git directory inside the repository
+        Path gitRepositoryConfigPath = Paths.get(repositoryPath, ".git");
         FileRepositoryBuilder builder = new FileRepositoryBuilder();
         Repository repository = null;
         try {
-            repository = builder.setGitDir(new File(repositoryPath))
+            repository = builder.setGitDir(gitRepositoryConfigPath.toFile())
                     .readEnvironment() // scan environment GIT_* variables
                     .build();
         } catch (IOException e) {
