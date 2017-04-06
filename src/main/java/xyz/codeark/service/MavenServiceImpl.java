@@ -3,6 +3,7 @@ package xyz.codeark.service;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.maven.shared.invoker.*;
 import org.springframework.stereotype.Service;
+import xyz.codeark.dto.MavenModule;
 import xyz.codeark.maven.MavenLifeCycle;
 import xyz.codeark.maven.MavenPhase;
 import xyz.codeark.rest.RestConstants;
@@ -19,10 +20,10 @@ public class MavenServiceImpl implements MavenService {
     private static final String SKIP_TESTS = "-DskipTests";
 
     @Override
-    public boolean build(MavenLifeCycle mavenLifeCycle,
-                         MavenPhase mavenPhase,
-                         Boolean skipTests,
-                         String mvnModulePath) {
+    public MavenModule build(MavenLifeCycle mavenLifeCycle,
+                             MavenPhase mavenPhase,
+                             Boolean skipTests,
+                             MavenModule mavenModule) {
 
         List<String> goalList = new ArrayList<>();
         if (skipTests) {
@@ -38,9 +39,16 @@ public class MavenServiceImpl implements MavenService {
         }
 
         InvocationResult invocationResult =
-                executeMavenCommand(goalList, mvnModulePath);
+                executeMavenCommand(goalList, mavenModule.getPath());
 
-        return invocationResult.getExitCode() == 0;
+        if (invocationResult.getExitCode() == 0) {
+            mavenModule.setStatus(RestConstants.MAVEN_SUCCESS);
+            return mavenModule;
+        } else {
+            mavenModule.setStatus(RestConstants.MAVEN_FAILURE);
+            return mavenModule;
+        }
+
     }
 
     private InvocationResult executeMavenCommand(List<String> goalList, String mvnModulePath) {
@@ -78,7 +86,7 @@ public class MavenServiceImpl implements MavenService {
     private String extractPathVariable(String[] pathVariables) {
         for (String pathVariable : pathVariables) {
             if (pathVariable.contains("maven") || pathVariable.contains("mvn")) {
-                if (pathVariable.contains("bin")){
+                if (pathVariable.contains("bin")) {
                     return pathVariable.substring(0, pathVariable.length() - 3);
                 }
 

@@ -3,6 +3,7 @@ package xyz.codeark.rest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
+import xyz.codeark.dto.MavenModule;
 import xyz.codeark.maven.MavenLifeCycle;
 import xyz.codeark.maven.MavenPhase;
 import xyz.codeark.service.MavenService;
@@ -25,28 +26,23 @@ public class MavenResource {
 
     @POST
     @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
     public Response mvnBuild(
             @DefaultValue("CLEAN") @QueryParam("lifecycle") MavenLifeCycle mavenLifeCycle,
             @DefaultValue("INSTALL") @NotNull @QueryParam("mavenphase") MavenPhase mavenPhase,
             @DefaultValue("true") @QueryParam("skiptests") Boolean skipTests,
-            @FormParam("mvnModulePath") String mvnModulePath) {
+            MavenModule mavenModule) {
 
-        if ((StringUtils.isEmpty(mvnModulePath)) || (Files.notExists(Paths.get(mvnModulePath)))) {
-            log.error("Invalid module path {}", mvnModulePath);
+        if ((StringUtils.isEmpty(mavenModule.getPath())) || (Files.notExists(Paths.get(mavenModule.getPath())))) {
+            log.error("Invalid module path {}", mavenModule.getPath());
             return Response.status(Response.Status.BAD_REQUEST)
                     .entity(RestConstants.INVALID_MVN_MODULE_PATH)
                     .build();
         }
 
-        if (mavenService.build(mavenLifeCycle, mavenPhase, skipTests, mvnModulePath)) {
-            return Response.ok()
-                    .entity(RestConstants.MAVEN_SUCCESS)
-                    .build();
-        } else {
-            return Response.ok()
-                    .entity(RestConstants.MAVEN_FAILURE)
-                    .build();
-        }
+        return Response.ok()
+                .entity(mavenService.build(mavenLifeCycle, mavenPhase, skipTests, mavenModule))
+                .build();
     }
 }
 // 3 basic green plants

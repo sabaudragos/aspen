@@ -1,8 +1,12 @@
 .glyph-success {
+    padding-right: 10px;
+    padding-left: 10px;
     color: #5cb85c;
 }
 
 .glyph-failure {
+    padding-right: 10px;
+    padding-left: 10px;
     color: #c9302c;
 }
 
