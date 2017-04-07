@@ -145,6 +145,7 @@ $(document).ready(function () {
         }
 
         return "<button type=\"button\" class=\"btn btn-success btn-xs git-update-button\" " +
+            "name=\"" + gitRepository.name + "\" " +
             "path=\"" + gitRepository.path + "\" " +
             "data-toggle=\"tooltip\" " +
             "data-placement=\"right\" " +
