@@ -3,6 +3,7 @@ package xyz.codeark.rest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
+import xyz.codeark.dto.GitRepository;
 import xyz.codeark.service.GitService;
 
 import javax.annotation.Resource;
@@ -24,25 +25,19 @@ public class GitResource {
     @Consumes(MediaType.APPLICATION_JSON)
     public Response gitPull(
             @DefaultValue("true") @QueryParam("rebase") Boolean rebase,
-            String repositoryPath) {
+            GitRepository gitRepository) {
 
-        if ((StringUtils.isEmpty(repositoryPath)) || (Files.notExists(Paths.get(repositoryPath)))) {
-            log.error("Invalid git repository path {}", repositoryPath);
+        if ((StringUtils.isEmpty(gitRepository.getPath())) || (Files.notExists(Paths.get(gitRepository.getPath())))) {
+            log.error("Invalid git repository path {}", gitRepository);
             return Response.status(Response.Status.BAD_REQUEST)
                     .entity(RestConstants.INVALID_GIT_REPOSITORY_PATH)
                     .build();
         }
 
-        gitService.isUpToDate(repositoryPath);
+        gitService.isUpToDate(gitRepository);
 
-        if (gitService.pull(repositoryPath, rebase)) {
-            return Response.status(Response.Status.OK)
-                    .entity(RestConstants.GIT_SUCCESS)
-                    .build();
-        } else {
-            return Response.status(Response.Status.OK)
-                    .entity(RestConstants.GIT_PULL_FAILED)
-                    .build();
-        }
+        return Response.status(Response.Status.OK)
+                .entity(gitService.pull(gitRepository, rebase))
+                .build();
     }
 }

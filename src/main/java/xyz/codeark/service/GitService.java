@@ -3,6 +3,7 @@ package xyz.codeark.service;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.springframework.stereotype.Service;
+import xyz.codeark.dto.GitRepository;
 
 /**
  * A Git operations service class
@@ -12,25 +13,24 @@ public interface GitService {
     /**
      * Pulls data from origin. It does a 'git pull'
      *
-     * @param repositoryPath the path to repository
-     * @param userRebase     true if --rebase should be used
+     * @param gitRepository git repository dto
+     * @param userRebase    true if --rebase should be used
      */
-    boolean pull(String repositoryPath, Boolean userRebase);
-
+    GitRepository pull(GitRepository gitRepository, Boolean userRebase);
 
     /**
      * Creates a stash of the changes found in the
      *
-     * @param git   the git repository
-     * @return      a commit reference
+     * @param git the git repository
+     * @return a commit reference
      */
     RevCommit createStash(Git git);
 
     /**
      * Checks if the repository is up to date
      *
-     * @param repositoryPath    the path to the repository
-     * @return                  true if the repository is up to date, false otherwise
+     * @param gitRepository git repository dto
+     * @return the status of the repository (is up to date, behind or ahead origin)
      */
-    boolean isUpToDate(String repositoryPath);
+    String isUpToDate(GitRepository gitRepository);
 }

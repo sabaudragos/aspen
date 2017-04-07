@@ -3,14 +3,17 @@ package xyz.codeark.service;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.PullResult;
+import org.eclipse.jgit.api.RebaseResult;
 import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.lib.BranchTrackingStatus;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
-import org.eclipse.jgit.transport.FetchResult;
 import org.springframework.stereotype.Service;
+import xyz.codeark.dto.GitRepository;
+import xyz.codeark.rest.RestConstants;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -21,10 +24,10 @@ import java.nio.file.Paths;
 public class GitServiceImpl implements GitService {
 
     @Override
-    public boolean pull(String repositoryPath, Boolean userRebase) {
-        log.info("Updating repository: {}", repositoryPath);
+    public GitRepository pull(GitRepository gitRepository, Boolean userRebase) {
+        log.info("Updating repository: {}", gitRepository.getName());
 
-        Git git = getGitInstance(repositoryPath);
+        Git git = getGitInstance(gitRepository.getPath());
         PullResult pullResult = null;
 
         try {
@@ -37,7 +40,7 @@ public class GitServiceImpl implements GitService {
 
             pullResult = git.pull().setRebase(userRebase).call();
 
-            if (stash != null){
+            if (stash != null) {
                 log.info("Applying stash");
                 ObjectId appliedStashId = git.stashApply().setStashRef(stash.getName()).call();
                 log.info("Stash with ID {} was applied successfully", appliedStashId);
@@ -48,7 +51,15 @@ public class GitServiceImpl implements GitService {
         }
 
         // should both the rebase and fetch results be treated?
-        return pullResult.getRebaseResult().getStatus().isSuccessful();
+
+        pullResult.getRebaseResult().getStatus().equals(RebaseResult.Status.UP_TO_DATE);
+
+        if (pullResult.getRebaseResult().getStatus().isSuccessful()) {
+            gitRepository.setStatus(RestConstants.GIT_PULL_SUCCESS);
+        } else {
+            gitRepository.setStatus(RestConstants.GIT_PULL_FAILED);
+        }
+        return gitRepository;
     }
 
     @Override
@@ -67,16 +78,33 @@ public class GitServiceImpl implements GitService {
     }
 
     @Override
-    public boolean isUpToDate(String repositoryPath) {
-        log.info("Checking if repository \'{}\' is up to date", repositoryPath);
-        Git git = getGitInstance(repositoryPath);
+    public String isUpToDate(GitRepository gitRepository) {
+        log.info("Checking if repository \'{}\' is up to date", gitRepository);
+
+        Git git = getGitInstance(gitRepository.getPath());
+
         try {
-            FetchResult fetchResult = git.fetch().call();
-            fetchResult.getMessages();
-        } catch (GitAPIException e) {
+            BranchTrackingStatus branchTrackingStatus =
+                    BranchTrackingStatus.of(git.getRepository(), git.getRepository().getBranch());
+
+            if (branchTrackingStatus.getBehindCount() > 0){
+                // local branch is behind origin by branchTrackingStatus.getBehindCount()
+                // local branch is outdated
+                return RestConstants.GIT_REPOSITORY_IS_BEHIND_OF_ORIGIN;
+            }
+
+            if (branchTrackingStatus.getBehindCount() > 0){
+                // local branch is ahead origin by branchTrackingStatus.getBehindCount()
+                // local branch is not outdated
+                return RestConstants.GIT_REPOSITORY_IS_AHEAD_OF_ORIGIN;
+            }
+
+        } catch (IOException e) {
+            log.error("Error while checking the status of {}", gitRepository.getName());
             e.printStackTrace();
         }
-        return false;
+
+        return RestConstants.GIT_REPOSITORY_IS_UP_TO_DATE;
     }
 
     private Git getGitInstance(String repositoryPath) {

@@ -7,6 +7,8 @@ $(document).ready(function () {
 
     var MAVEN_SUCCESS = "Maven executed successfully";
     var MAVEN_FAILURE = "Maven execution failed";
+    var GIT_PULL_FAILED = "Git pull failed";
+    var GIT_PULL_SUCCESS = "Git pull executed successfully";
     // initialize all tooltips -- NOT WORKING
     $("[data-toggle=tooltip]").tooltip();
 
@@ -167,9 +169,9 @@ $(document).ready(function () {
             contentType: "application/json",
             dataType: "json",
             data: JSON.stringify({
-                "path" : $mvnButton.attr("path"),
-                "name" : $mvnButton.attr("name"),
-                "status" : ""
+                "path": $mvnButton.attr("path"),
+                "name": $mvnButton.attr("name"),
+                "status": ""
             }),
 
             statusCode: {
@@ -205,33 +207,43 @@ $(document).ready(function () {
         $gitButton = $(this);
 
         $.ajax({
-            url : gitUrl,
+            url: gitUrl,
             type: "POST",
             contentType: "application/json",
             dataType: "json",
             data: JSON.stringify({
-                "path" : $gitButton.attr("path"),
-                "name" : $gitButton.attr("name"),
-                "status" : ""
+                "path": $gitButton.attr("path"),
+                "name": $gitButton.attr("name"),
+                "status": ""
             }),
 
             statusCode: {
                 200: function (response) {
-                    var responseMessage = response.responseText;
-
-                    if (responseMessage === MAVEN_SUCCESS) {
-                        // displayMvnSuccess($gitButton);
-                    } else if (responseMessage === MAVEN_FAILURE) {
-                        // displayMvnFailure($gitButton, response);
-                    }
+                    displayGitPullStatus(response);
                 },
                 400: function (response) {
+                    //TODO needs refactoring
                     removeExistingMessage();
                     displayErrorMessage(response.responseText + ". Module name: " + $gitButton.parent().prev().text());
                 }
             }
         });
     });
+
+    function displayGitPullStatus(response) {
+        var pullStatus = response.status;
+        var $mavenModuleSelector = $("#git-repository-" + response.name);
+
+        if ($mavenModuleSelector.next('span').length > 0) {
+            $mavenModuleSelector.next('span').remove();
+        }
+
+        if (pullStatus === GIT_PULL_SUCCESS) {
+            $mavenModuleSelector.after("<span class=\"glyphicon glyphicon-ok glyph-success\" aria-hidden=\"true\"></span>");
+        } else if (pullStatus === GIT_PULL_FAILED) {
+            $mavenModuleSelector.after("<span class=\"glyphicon glyphicon-remove glyph-failure\" aria-hidden=\"true\"></span>");
+        }
+    }
 
 
     /* ------------------- Common code ------------------- */

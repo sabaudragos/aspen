@@ -24,9 +24,16 @@ public class RestConstants {
     public static final String MAVEN_SUCCESS = "Maven executed successfully";
     public static final String MAVEN_FAILURE = "Maven execution failed";
     public static final String INVALID_MVN_MODULE_PATH = "Invalid maven module path";
-    public static final String INVALID_GIT_REPOSITORY_PATH = "Invalid git repository path";
-    public static final String GIT_PULL_FAILED = "Git pull failed";
-    public static final String GIT_SUCCESS = "Git executed successfully";
     public static final String UNSUPPORTED_OPERATING_SYSTEM = "Unsupported operating system";
     public static final String MVN_PATH_NOT_FOUND_IN_PATH_VARIABLE = "Maven not found in path variable";
+
+    /**
+     * Git related constants
+     */
+    public static final String INVALID_GIT_REPOSITORY_PATH = "Invalid git repository path";
+    public static final String GIT_PULL_FAILED = "Git pull failed";
+    public static final String GIT_PULL_SUCCESS = "Git pull executed successfully";
+    public static final String GIT_REPOSITORY_IS_UP_TO_DATE = "Git repository is up to date with origin";
+    public static final String GIT_REPOSITORY_IS_AHEAD_OF_ORIGIN = "Git repository is ahead origin";
+    public static final String GIT_REPOSITORY_IS_BEHIND_OF_ORIGIN = "Git repository is behind origin";
 }
