@@ -47,7 +47,6 @@ public class GitServiceImpl implements GitService {
             }
         } catch (GitAPIException e) {
             log.error("Error while updating the repository", e);
-            e.printStackTrace();
         }
 
         // should both the rebase and fetch results be treated?
