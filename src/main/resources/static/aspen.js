@@ -105,6 +105,7 @@ $(document).ready(function () {
                     "path=\"" + mvnModules[i].path + "\" " +
                     "data-toggle=\"tooltip\" " +
                     "data-placement=\"right\" " +
+                    "data-loading-text=\"<i class='fa fa-spinner fa-spin '></i>Building...\""+
                     "title=\"Click to build. No tests!\">" +
                     "Build" +
                     "</button>" +
@@ -139,6 +140,7 @@ $(document).ready(function () {
                 "path=\"" + gitRepository.path + "\" " +
                 "data-toggle=\"tooltip\" " +
                 "data-placement=\"right\" " +
+                "data-loading-text=\"<i class='fa fa-spinner fa-spin '></i>Checking...\""+
                 "title=\"Click to update!\">" +
                 "Out of date" +
                 "</button>";
@@ -149,6 +151,7 @@ $(document).ready(function () {
             "path=\"" + gitRepository.path + "\" " +
             "data-toggle=\"tooltip\" " +
             "data-placement=\"right\" " +
+            "data-loading-text=\"<i class='fa fa-spinner fa-spin '></i>Checking...\""+
             "title=\"Click to re-check!\">" +
             "Up to date" +
             "</button>";
@@ -158,6 +161,7 @@ $(document).ready(function () {
     /* ------------------- Maven related code ------------------- */
     $(document).on("click", ".mvn-update-button", function () {
         $mvnButton = $(this);
+        $mvnButton.button('loading');
 
         // remove existing success/failure glyph
         if ($mvnButton.next('span').length > 0) {
@@ -186,6 +190,7 @@ $(document).ready(function () {
                 }
             }
         });
+        $mvnButton.button('reset');
     });
 
     function displayMvnBuildStatus(response) {
@@ -206,6 +211,8 @@ $(document).ready(function () {
     /* ------------------- Git related code ------------------- */
     $(document).on("click", ".git-update-button", function () {
         $gitButton = $(this);
+
+        $gitButton.button('loading');
 
         $.ajax({
             url: gitUrl,
@@ -229,6 +236,8 @@ $(document).ready(function () {
                 }
             }
         });
+
+        $gitButton.button('reset');
     });
 
     function displayGitPullStatus(response) {
