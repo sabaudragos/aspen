@@ -80,10 +80,14 @@ public class GitServiceImpl implements GitService {
     }
 
     @Override
-    public String isUpToDate(GitRepository gitRepository) {
-        log.info("Checking if repository \'{}\' is up to date", gitRepository);
+    public GitRepository isUpToDate(String repositoryPath) {
+        log.info("Checking if repository \'{}\' is up to date", repositoryPath);
 
-        Git git = getGitInstance(gitRepository.getPath());
+        Git git = getGitInstance(repositoryPath);
+
+        GitRepository gitRepository = new GitRepository();
+        gitRepository.setPath(repositoryPath);
+        gitRepository.setName(repositoryPath.substring(repositoryPath.lastIndexOf('/') + 1));
 
         try {
             BranchTrackingStatus branchTrackingStatus =
@@ -92,13 +96,15 @@ public class GitServiceImpl implements GitService {
             if (branchTrackingStatus.getBehindCount() > 0){
                 // local branch is behind origin by branchTrackingStatus.getBehindCount()
                 // local branch is outdated
-                return RestConstants.GIT_REPOSITORY_IS_BEHIND_OF_ORIGIN;
+                gitRepository.setStatus(RestConstants.GIT_REPOSITORY_IS_BEHIND_OF_ORIGIN);
+                return gitRepository;
             }
 
             if (branchTrackingStatus.getBehindCount() > 0){
                 // local branch is ahead origin by branchTrackingStatus.getBehindCount()
                 // local branch is not outdated
-                return RestConstants.GIT_REPOSITORY_IS_AHEAD_OF_ORIGIN;
+                gitRepository.setStatus(RestConstants.GIT_REPOSITORY_IS_AHEAD_OF_ORIGIN);
+                return gitRepository;
             }
 
         } catch (IOException e) {
@@ -106,7 +112,9 @@ public class GitServiceImpl implements GitService {
             e.printStackTrace();
         }
 
-        return RestConstants.GIT_REPOSITORY_IS_UP_TO_DATE;
+        gitRepository.setStatus(RestConstants.GIT_REPOSITORY_IS_UP_TO_DATE);
+
+        return gitRepository;
     }
 
     private Git getGitInstance(String repositoryPath) {
@@ -119,7 +127,8 @@ public class GitServiceImpl implements GitService {
                     .readEnvironment() // scan environment GIT_* variables
                     .build();
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("Error while building a git instance", e);
+            throw new AspenRestException(RestConstants.ERROR_BUILDING_GIT_INSTANCE, Response.Status.ACCEPTED);
         }
 
         return new Git(repository);

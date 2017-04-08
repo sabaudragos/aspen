@@ -41,21 +41,19 @@ public class GitResource {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
+    @Path("{repositoryPath}")
     public Response checkIfRepositoryIsUpToDate(
-            @DefaultValue("true") @QueryParam("rebase") Boolean rebase,
-            GitRepository gitRepository) {
+            @PathParam("repositoryPath") String repositoryPath) {
 
-        if ((StringUtils.isEmpty(gitRepository.getPath())) || (Files.notExists(Paths.get(gitRepository.getPath())))) {
-            log.error("Invalid git repository path {}", gitRepository);
+        if ((StringUtils.isEmpty(repositoryPath)) || (Files.notExists(Paths.get(repositoryPath)))) {
+            log.error("Invalid git repository path {}", repositoryPath);
             return Response.status(Response.Status.BAD_REQUEST)
                     .entity(RestConstants.INVALID_GIT_REPOSITORY_PATH)
                     .build();
         }
 
-        gitService.isUpToDate(gitRepository);
-
         return Response.status(Response.Status.OK)
-                .entity(gitService.pull(gitRepository, rebase))
+                .entity(gitService.isUpToDate(repositoryPath))
                 .build();
     }
 }

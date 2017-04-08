@@ -260,6 +260,11 @@ $(document).ready(function () {
                 200: function (response) {
                     displayGitPullStatus(response);
                 },
+                202: function (response) {
+                    displayGitPullStatus(response);
+                    //AspenRestException(RestConstants.GIT_PULL_FAILED, Response.Status.ACCEPTED); - displayed per git repo
+                    //AspenRestException(RestConstants.ERROR_BUILDING_GIT_INSTANCE, Response.Status.ACCEPTED) - displayed per git repo and page
+                },
                 400: function (response) {
                     //TODO needs refactoring
                     removeExistingMessage();

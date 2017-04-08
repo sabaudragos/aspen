@@ -29,8 +29,8 @@ public interface GitService {
     /**
      * Checks if the repository is up to date
      *
-     * @param gitRepository git repository dto
-     * @return the status of the repository (is up to date, behind or ahead origin)
+     * @param repositoryPath    the git repository path
+     * @return the dto for the repository (name, path and status of the repository (is up to date, behind or ahead origin))
      */
-    String isUpToDate(GitRepository gitRepository);
+    GitRepository isUpToDate(String repositoryPath);
 }
