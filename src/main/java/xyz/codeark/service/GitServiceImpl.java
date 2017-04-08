@@ -14,7 +14,9 @@ import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.springframework.stereotype.Service;
 import xyz.codeark.dto.GitRepository;
 import xyz.codeark.rest.RestConstants;
+import xyz.codeark.rest.exceptions.AspenRestException;
 
+import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -47,6 +49,7 @@ public class GitServiceImpl implements GitService {
             }
         } catch (GitAPIException e) {
             log.error("Error while updating the repository", e);
+            throw new AspenRestException(RestConstants.GIT_PULL_FAILED, Response.Status.ACCEPTED);
         }
 
         // should both the rebase and fetch results be treated?

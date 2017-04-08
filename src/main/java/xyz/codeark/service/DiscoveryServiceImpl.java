@@ -51,7 +51,7 @@ public class DiscoveryServiceImpl implements DiscoveryService {
             log.error("There was an error while discovering the directories. {}",
                     Arrays.toString(e.getStackTrace()));
             throw new AspenRestException(RestConstants.DIRECTORY_DISCOVERY_FAILURE,
-                    Response.Status.INTERNAL_SERVER_ERROR);
+                    Response.Status.ACCEPTED);
         }
 
         Map<String, Set<Directory>> repositoriesAndMvnModules = new HashMap<>();

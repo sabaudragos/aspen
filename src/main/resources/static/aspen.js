@@ -5,10 +5,16 @@ var gitUrl = serverUrl + "git";
 
 $(document).ready(function () {
 
-    var MAVEN_SUCCESS = "Maven executed successfully";
-    var MAVEN_FAILURE = "Maven execution failed";
+    var MAVEN_BUILD_SUCCESS = "Maven build success";
+    var MAVEN_BUILD_FAIL = "Maven build fail";
+    var MAVEN_INVOKER_FAILURE = "Maven invoker failed";
+    var INVALID_MVN_MODULE_PATH = "Invalid maven module path";
+    var UNSUPPORTED_OPERATING_SYSTEM = "Unsupported operating system";
+    var MAVEN_PATH_NOT_FOUND_IN_PATH_VARIABLE = "Maven not found in path variable";
     var GIT_PULL_FAILED = "Git pull failed";
     var GIT_PULL_SUCCESS = "Git pull executed successfully";
+    var NO_MAVEN_MODULES_AND_NO_GIT_REPOSITORIES_FOUND = "No maven modules and no git repositories found";
+
     // initialize all tooltips -- NOT WORKING
     $("[data-toggle=tooltip]").tooltip();
 
@@ -23,16 +29,29 @@ $(document).ready(function () {
                 directoryToSearch: $("#directory-to-search-input").val()
             },
 
-            success: function (result) {
-                removeExistingMessage();
-                displayRepositories(result.Git_repositories);
-                displayMavenModules(result.Maven_modules);
-                // trigger git up to date check for repositories?
-            },
-            error: function (result) {
-                removeExistingMessage();
-                displayErrorMessage("Error while discovering the directories. Message: " + result.responseText);
-                removeDiscoveredDirectories();
+            statusCode: {
+                200: function (result) {
+                    if ((result.Git_repositories.length===0) || (result.Maven_modules.length===0)) {
+                        removeExistingMessage();
+                        displayErrorMessage(NO_MAVEN_MODULES_AND_NO_GIT_REPOSITORIES_FOUND);
+                        removeDiscoveredDirectories();
+                    } else {
+                        removeExistingMessage();
+                        displayRepositories(result.Git_repositories);
+                        displayMavenModules(result.Maven_modules);
+                        // trigger git up to date check for repositories
+                    }
+                },
+                202: function (result) {
+                    removeExistingMessage();
+                    displayErrorMessage(result.responseText);
+                    removeDiscoveredDirectories();
+                },
+                400: function (result) {
+                    removeExistingMessage();
+                    displayErrorMessage(result.responseText);
+                    removeDiscoveredDirectories();
+                }
             }
         });
     });
@@ -160,7 +179,7 @@ $(document).ready(function () {
 
     /* ------------------- Maven related code ------------------- */
     $(document).on("click", ".mvn-update-button", function () {
-        $mvnButton = $(this);
+        var $mvnButton = $(this);
         $mvnButton.button('loading');
 
         // remove existing success/failure glyph
@@ -183,6 +202,18 @@ $(document).ready(function () {
                 200: function (response) {
                     displayMvnBuildStatus(response);
                 },
+                202: function (response) {
+                    var responseMessage = response.responseText;
+                    if ((responseMessage === MAVEN_PATH_NOT_FOUND_IN_PATH_VARIABLE) ||
+                        (responseMessage === UNSUPPORTED_OPERATING_SYSTEM)) {
+                        removeExistingMessage();
+                        displayErrorMessage(displayErrorMessage(response.responseText + ". Module name: " + $mvnButton.parent().prev().text()));
+                    }
+
+                    if (responseMessage === MAVEN_INVOKER_FAILURE) {
+                        //TODO Error message for MAVEN_INVOKER_FAILURE should be displayed per module
+                    }
+                },
                 400: function (response) {
                     //TODO needs refactoring
                     removeExistingMessage();
@@ -201,16 +232,16 @@ $(document).ready(function () {
             $mavenModuleSelector.next('span').remove();
         }
 
-        if (buildStatus === MAVEN_SUCCESS) {
+        if (buildStatus === MAVEN_BUILD_SUCCESS) {
             $mavenModuleSelector.after("<span class=\"glyphicon glyphicon-ok glyph-success\" aria-hidden=\"true\"></span>");
-        } else if (buildStatus === MAVEN_FAILURE) {
+        } else if (buildStatus === MAVEN_BUILD_FAIL) {
             $mavenModuleSelector.after("<span class=\"glyphicon glyphicon-remove glyph-failure\" aria-hidden=\"true\"></span>");
         }
     }
 
     /* ------------------- Git related code ------------------- */
     $(document).on("click", ".git-update-button", function () {
-        $gitButton = $(this);
+        var $gitButton = $(this);
 
         $gitButton.button('loading');
 

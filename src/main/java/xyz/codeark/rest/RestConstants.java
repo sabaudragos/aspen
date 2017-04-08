@@ -15,17 +15,18 @@ public class RestConstants {
     /**
      * Directory related exception messages
      */
-    public static final String INVALID_PATH = "Invalid directory path";
+    public static final String DIRECTORY_DISCOVERY_INVALID_PATH = "Invalid directory path";
     public static final String DIRECTORY_DISCOVERY_FAILURE = "Directory discovery failed due to IO error";
 
     /**
      * Maven related constants
      */
-    public static final String MAVEN_SUCCESS = "Maven executed successfully";
-    public static final String MAVEN_FAILURE = "Maven execution failed";
+    public static final String MAVEN_BUILD_SUCCESS = "Maven build success";
+    public static final String MAVEN_BUILD_FAIL = "Maven build fail";
+    public static final String MAVEN_INVOKER_FAILURE = "Maven invoker failed";
     public static final String INVALID_MVN_MODULE_PATH = "Invalid maven module path";
     public static final String UNSUPPORTED_OPERATING_SYSTEM = "Unsupported operating system";
-    public static final String MVN_PATH_NOT_FOUND_IN_PATH_VARIABLE = "Maven not found in path variable";
+    public static final String MAVEN_PATH_NOT_FOUND_IN_PATH_VARIABLE = "Maven not found in path variable";
 
     /**
      * Git related constants

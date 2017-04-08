@@ -34,7 +34,7 @@ public class DirectoryDiscoveryResource {
         log.debug("Discovering directories in {}", directoryToSearch);
         if ((StringUtils.isEmpty(directoryToSearch)) || Files.notExists(Paths.get(directoryToSearch))) {
             return Response.status(Response.Status.BAD_REQUEST)
-                    .entity(RestConstants.INVALID_PATH)
+                    .entity(RestConstants.DIRECTORY_DISCOVERY_INVALID_PATH)
                     .build();
         }
 

@@ -42,10 +42,10 @@ public class MavenServiceImpl implements MavenService {
                 executeMavenCommand(goalList, mavenModule.getPath());
 
         if (invocationResult.getExitCode() == 0) {
-            mavenModule.setStatus(RestConstants.MAVEN_SUCCESS);
+            mavenModule.setStatus(RestConstants.MAVEN_BUILD_SUCCESS);
             return mavenModule;
         } else {
-            mavenModule.setStatus(RestConstants.MAVEN_FAILURE);
+            mavenModule.setStatus(RestConstants.MAVEN_BUILD_FAIL);
             return mavenModule;
         }
 
@@ -65,7 +65,7 @@ public class MavenServiceImpl implements MavenService {
             invocationResult = invoker.execute(request);
         } catch (MavenInvocationException e) {
             log.error("Maven operation failed. {}", e);
-            throw new AspenRestException(RestConstants.MAVEN_FAILURE, Response.Status.BAD_REQUEST);
+            throw new AspenRestException(RestConstants.MAVEN_INVOKER_FAILURE, Response.Status.ACCEPTED);
         }
 
         log.info("Maven command was executed successfully");
@@ -80,7 +80,7 @@ public class MavenServiceImpl implements MavenService {
         }
 
         log.error("Unsupported operating system");
-        throw new AspenRestException(RestConstants.UNSUPPORTED_OPERATING_SYSTEM, Response.Status.BAD_REQUEST);
+        throw new AspenRestException(RestConstants.UNSUPPORTED_OPERATING_SYSTEM, Response.Status.ACCEPTED);
     }
 
     private String extractPathVariable(String[] pathVariables) {
@@ -95,6 +95,6 @@ public class MavenServiceImpl implements MavenService {
         }
 
         log.error("Maven path not found in the Path variable");
-        throw new AspenRestException(RestConstants.MVN_PATH_NOT_FOUND_IN_PATH_VARIABLE, Response.Status.BAD_REQUEST);
+        throw new AspenRestException(RestConstants.MAVEN_PATH_NOT_FOUND_IN_PATH_VARIABLE, Response.Status.ACCEPTED);
     }
 }
