@@ -14,6 +14,11 @@ $(document).ready(function () {
     var GIT_PULL_FAILED = "Git pull failed";
     var GIT_PULL_SUCCESS = "Git pull executed successfully";
     var GIT_NO_REMOTE_TRACKING_OF_BRANCH = "Returned null, likely no remote tracking of branch";
+    var GIT_REPOSITORY_IS_UP_TO_DATE = "Git repository is up to date with origin";
+    var GIT_REPOSITORY_IS_AHEAD_OF_ORIGIN = "Git repository is ahead origin";
+    var GIT_REPOSITORY_IS_BEHIND_OF_ORIGIN = "Git repository is behind origin";
+    var ERROR_WHILE_STASHING_CHANGES = "Error while stashing the changes";
+    var ERROR_WHILE_CHECKING_BRANCH_STATUS = "Error while checking the status";
     var NO_MAVEN_MODULES_AND_NO_GIT_REPOSITORIES_FOUND = "No maven modules and no git repositories found";
 
     // initialize all tooltips -- NOT WORKING
@@ -40,6 +45,7 @@ $(document).ready(function () {
                         removeExistingMessage();
                         displayRepositories(result.Git_repositories);
                         displayMavenModules(result.Maven_modules);
+                        checkIfRepositoriesAreUpToDate(result.Git_repositories);
                         // trigger git up to date check for repositories
                     }
                 },
@@ -84,7 +90,7 @@ $(document).ready(function () {
                     "<td>" + (i + 1) + "</td>" +
                     "<td>" + gitRepositories[i].name + "</td>" +
                     "<td>" +
-                        getGitRepositoryStatus(gitRepositories[i]) +
+                        getDefaultGitRepositoryStatus(gitRepositories[i]) +
                     "</td>" +
                     "</tr>"
                 );
@@ -153,28 +159,96 @@ $(document).ready(function () {
     }
 
     function getGitRepositoryStatus(gitRepository) {
-        if (gitRepository.name === "keystoneOLD") {
-            return "<button type=\"button\" class=\"btn btn-danger btn-xs git-update-button\" " +
-                "id=\"git-repository-" + gitRepository.name + "\" " +
-                "name=\"" + gitRepository.name + "\" " +
-                "path=\"" + gitRepository.path + "\" " +
-                "data-toggle=\"tooltip\" " +
-                "data-placement=\"right\" " +
-                "data-loading-text=\"<i class='fa fa-spinner fa-spin '></i>Checking...\""+
-                "title=\"Click to update!\">" +
-                "Out of date" +
-                "</button>";
+        switch (gitRepository.status) {
+            case GIT_REPOSITORY_IS_AHEAD_OF_ORIGIN:
+                //business logic - Up to date - ahead origin
+                return "<button type=\"button\" class=\"btn btn-success btn-xs git-update-button\" " +
+                    "name=\"" + gitRepository.name + "\" " +
+                    "path=\"" + gitRepository.path + "\" " +
+                    "data-toggle=\"tooltip\" " +
+                    "data-placement=\"right\" " +
+                    "data-loading-text=\"<i class='fa fa-spinner fa-spin '></i>Checking...\""+
+                    "title=\"Click to re-check!\">" +
+                    "Up to date" +
+                    "</button>" + " - ahead origin";
+            case GIT_REPOSITORY_IS_UP_TO_DATE:
+                // up to date
+                return "<button type=\"button\" class=\"btn btn-success btn-xs git-update-button\" " +
+                    "name=\"" + gitRepository.name + "\" " +
+                    "path=\"" + gitRepository.path + "\" " +
+                    "data-toggle=\"tooltip\" " +
+                    "data-placement=\"right\" " +
+                    "data-loading-text=\"<i class='fa fa-spinner fa-spin '></i>Checking...\""+
+                    "title=\"Click to re-check!\">" +
+                    "Up to date" +
+                    "</button>";
+            case GIT_REPOSITORY_IS_BEHIND_OF_ORIGIN:
+                // business logic - out of date
+                return "<button type=\"button\" class=\"btn btn-danger btn-xs git-update-button\" " +
+                    "id=\"git-repository-" + gitRepository.name + "\" " +
+                    "name=\"" + gitRepository.name + "\" " +
+                    "path=\"" + gitRepository.path + "\" " +
+                    "data-toggle=\"tooltip\" " +
+                    "data-placement=\"right\" " +
+                    "data-loading-text=\"<i class='fa fa-spinner fa-spin '></i>Checking...\"" +
+                    "title=\"Click to update!\">" +
+                    "Out of date" +
+                    "</button>" + " - behind origin";
+            case GIT_NO_REMOTE_TRACKING_OF_BRANCH:
+                // business logic - out of date
+                return "<button type=\"button\" class=\"btn btn-danger btn-xs git-update-button\" " +
+                    "id=\"git-repository-" + gitRepository.name + "\" " +
+                    "name=\"" + gitRepository.name + "\" " +
+                    "path=\"" + gitRepository.path + "\" " +
+                    "data-toggle=\"tooltip\" " +
+                    "data-placement=\"right\" " +
+                    "data-loading-text=\"<i class='fa fa-spinner fa-spin '></i>Checking...\"" +
+                    "title=\"Click to re-check!\">" +
+                    "Unkown" +
+                    "</button>" + " - likely no remote tracking branch";
         }
+    }
 
-        return "<button type=\"button\" class=\"btn btn-success btn-xs git-update-button\" " +
+    function getDefaultGitRepositoryStatus(gitRepository) {
+        return "<img src=\"./img/ajax-loader-grey.gif\"" +
+            "id=\"git-repository-img-" + gitRepository.name + "\" " +
             "name=\"" + gitRepository.name + "\" " +
             "path=\"" + gitRepository.path + "\" " +
             "data-toggle=\"tooltip\" " +
             "data-placement=\"right\" " +
-            "data-loading-text=\"<i class='fa fa-spinner fa-spin '></i>Checking...\""+
-            "title=\"Click to re-check!\">" +
-            "Up to date" +
-            "</button>";
+            "title=\"Pending status check!\">";
+    }
+
+    function checkIfRepositoriesAreUpToDate(gitRepositories) {
+        for (var i = 0; i < gitRepositories.length; i++) {
+            $("#git-repository-img-" + gitRepositories[i].name).attr("src", "./img/ajax-loader-red.gif");
+
+            $.ajax({
+                url: gitUrl,
+                type: "GET",
+                data: {
+                    repositoryPath: gitRepositories[i].path
+                },
+
+                statusCode: {
+                    200: function (result) {
+                        var $gitRepositorySelector = $("#git-repository-img-" + result.name)
+                        $gitRepositorySelector.before(getGitRepositoryStatus(result));
+                        $gitRepositorySelector.remove();
+                    },
+                    202: function (result) {
+                        var $gitRepositorySelector = $("#git-repository-img-" + result.name)
+                        $gitRepositorySelector.before(getGitRepositoryStatus(result));
+                        $gitRepositorySelector.remove();
+
+                    },
+                    400: function (result) {
+                        //TODO
+
+                    }
+                }
+            });
+        }
     }
 
 
@@ -276,6 +350,8 @@ $(document).ready(function () {
 
         $gitButton.button('reset');
     });
+
+
 
     function displayGitPullStatus(response) {
         var pullStatus = response.status;

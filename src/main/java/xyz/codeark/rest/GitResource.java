@@ -41,14 +41,21 @@ public class GitResource {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    @Path("{repositoryPath}")
     public Response checkIfRepositoryIsUpToDate(
-            @PathParam("repositoryPath") String repositoryPath) {
+            @QueryParam("repositoryPath") String repositoryPath) {
 
         if ((StringUtils.isEmpty(repositoryPath)) || (Files.notExists(Paths.get(repositoryPath)))) {
             log.error("Invalid git repository path {}", repositoryPath);
             return Response.status(Response.Status.BAD_REQUEST)
                     .entity(RestConstants.INVALID_GIT_REPOSITORY_PATH)
+                    .build();
+        }
+
+        GitRepository gitRepository = gitService.isUpToDate(repositoryPath);
+
+        if (gitRepository.getStatus().equals(RestConstants.GIT_NO_REMOTE_TRACKING_OF_BRANCH)){
+            Response.status(Response.Status.ACCEPTED)
+                    .entity(gitRepository)
                     .build();
         }
 

@@ -13,3 +13,11 @@
 .error-message {
     color: #c9302c;
 }
+
+.git-button-grey-ajax-loader {
+    content:url("./img/ajax-loader-grey.gif");
+}
+
+.git-button-red-ajax-loader {
+    content:url("./img/ajax-loader-red.gif");
+}

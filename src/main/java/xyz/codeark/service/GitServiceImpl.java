@@ -61,6 +61,7 @@ public class GitServiceImpl implements GitService {
         } else {
             gitRepository.setStatus(RestConstants.GIT_PULL_FAILED);
         }
+
         return gitRepository;
     }
 
@@ -72,10 +73,11 @@ public class GitServiceImpl implements GitService {
             revCommit = git.stashCreate().call();
         } catch (GitAPIException e) {
             log.error("Error while stashing the changes of {}", git.getRepository());
-            e.printStackTrace();
+            throw new AspenRestException(RestConstants.ERROR_WHILE_STASHING_CHANGES, Response.Status.ACCEPTED);
         }
 
         log.info("Uncommitted changes were successfully stashed");
+
         return revCommit;
     }
 
@@ -95,28 +97,33 @@ public class GitServiceImpl implements GitService {
 
             if (branchTrackingStatus == null) {
                 gitRepository.setStatus(RestConstants.GIT_NO_REMOTE_TRACKING_OF_BRANCH);
+                log.debug(RestConstants.GIT_NO_REMOTE_TRACKING_OF_BRANCH);
+
                 return gitRepository;
             }
 
             if (branchTrackingStatus.getBehindCount() > 0){
-                // local branch is behind origin by branchTrackingStatus.getBehindCount()
-                // local branch is outdated
+                // local branch is outdated, is behind origin by branchTrackingStatus.getBehindCount()
                 gitRepository.setStatus(RestConstants.GIT_REPOSITORY_IS_BEHIND_OF_ORIGIN);
+                log.debug(RestConstants.GIT_REPOSITORY_IS_BEHIND_OF_ORIGIN);
+
                 return gitRepository;
             }
 
             if (branchTrackingStatus.getBehindCount() > 0){
-                // local branch is ahead origin by branchTrackingStatus.getBehindCount()
-                // local branch is not outdated
+                // local branch NOT outdated, is ahead origin by branchTrackingStatus.getBehindCount()
                 gitRepository.setStatus(RestConstants.GIT_REPOSITORY_IS_AHEAD_OF_ORIGIN);
+                log.debug(RestConstants.GIT_REPOSITORY_IS_AHEAD_OF_ORIGIN);
+
                 return gitRepository;
             }
 
         } catch (IOException e) {
             log.error("Error while checking the status of {}", gitRepository.getName());
-            e.printStackTrace();
+            throw new AspenRestException(RestConstants.ERROR_WHILE_CHECKING_BRANCH_STATUS, Response.Status.ACCEPTED);
         }
 
+        log.debug(RestConstants.GIT_REPOSITORY_IS_UP_TO_DATE);
         gitRepository.setStatus(RestConstants.GIT_REPOSITORY_IS_UP_TO_DATE);
 
         return gitRepository;

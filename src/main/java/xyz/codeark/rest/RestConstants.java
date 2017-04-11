@@ -39,4 +39,6 @@ public class RestConstants {
     public static final String GIT_REPOSITORY_IS_BEHIND_OF_ORIGIN = "Git repository is behind origin";
     public static final String GIT_NO_REMOTE_TRACKING_OF_BRANCH = "Returned null, likely no remote tracking of branch";
     public static final String ERROR_BUILDING_GIT_INSTANCE = "Error while building a Git instance";
+    public static final String ERROR_WHILE_STASHING_CHANGES = "Error while stashing the changes";
+    public static final String ERROR_WHILE_CHECKING_BRANCH_STATUS = "Error while checking the status";
 }
