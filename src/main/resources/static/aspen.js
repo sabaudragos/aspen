@@ -13,6 +13,7 @@ $(document).ready(function () {
     var MAVEN_PATH_NOT_FOUND_IN_PATH_VARIABLE = "Maven not found in path variable";
     var GIT_PULL_FAILED = "Git pull failed";
     var GIT_PULL_SUCCESS = "Git pull executed successfully";
+    var GIT_NO_REMOTE_TRACKING_OF_BRANCH = "Returned null, likely no remote tracking of branch";
     var NO_MAVEN_MODULES_AND_NO_GIT_REPOSITORIES_FOUND = "No maven modules and no git repositories found";
 
     // initialize all tooltips -- NOT WORKING

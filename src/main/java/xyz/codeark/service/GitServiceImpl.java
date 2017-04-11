@@ -93,6 +93,11 @@ public class GitServiceImpl implements GitService {
             BranchTrackingStatus branchTrackingStatus =
                     BranchTrackingStatus.of(git.getRepository(), git.getRepository().getBranch());
 
+            if (branchTrackingStatus == null) {
+                gitRepository.setStatus(RestConstants.GIT_NO_REMOTE_TRACKING_OF_BRANCH);
+                return gitRepository;
+            }
+
             if (branchTrackingStatus.getBehindCount() > 0){
                 // local branch is behind origin by branchTrackingStatus.getBehindCount()
                 // local branch is outdated
