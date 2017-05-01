@@ -38,6 +38,8 @@ public class RestConstants {
     public static final String GIT_REPOSITORY_IS_AHEAD_OF_ORIGIN = "Git repository is ahead origin";
     public static final String GIT_REPOSITORY_IS_BEHIND_OF_ORIGIN = "Git repository is behind origin";
     public static final String GIT_NO_REMOTE_TRACKING_OF_BRANCH = "Returned null, likely no remote tracking of branch";
+    public static final String GIT_REPOSITORY_NO_REMOTE_ORIGIN_FOUND_IN_THE_LOCAL_CONFIG = "No remote origin found in the local git config file";
+    public static final String GIT_ERROR_WHILE_UPDATING_REPOSITORY = "Error while updating the repository";
     public static final String ERROR_BUILDING_GIT_INSTANCE = "Error while building a Git instance";
     public static final String ERROR_WHILE_STASHING_CHANGES = "Error while stashing the changes";
     public static final String ERROR_WHILE_CHECKING_BRANCH_STATUS = "Error while checking the status";

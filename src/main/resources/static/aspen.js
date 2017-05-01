@@ -14,12 +14,17 @@ $(document).ready(function () {
     var GIT_PULL_FAILED = "Git pull failed";
     var GIT_PULL_SUCCESS = "Git pull executed successfully";
     var GIT_NO_REMOTE_TRACKING_OF_BRANCH = "Returned null, likely no remote tracking of branch";
+    var GIT_REPOSITORY_NO_REMOTE_ORIGIN_FOUND_IN_THE_LOCAL_CONFIG = "No remote origin found in the local git config file";
+    var GIT_ERROR_WHILE_UPDATING_REPOSITORY = "Error while updating the repository";
+    var ERROR_BUILDING_GIT_INSTANCE = "Error while building a Git instance";
     var GIT_REPOSITORY_IS_UP_TO_DATE = "Git repository is up to date with origin";
     var GIT_REPOSITORY_IS_AHEAD_OF_ORIGIN = "Git repository is ahead origin";
     var GIT_REPOSITORY_IS_BEHIND_OF_ORIGIN = "Git repository is behind origin";
     var ERROR_WHILE_STASHING_CHANGES = "Error while stashing the changes";
     var ERROR_WHILE_CHECKING_BRANCH_STATUS = "Error while checking the status";
     var NO_MAVEN_MODULES_AND_NO_GIT_REPOSITORIES_FOUND = "No maven modules and no git repositories found";
+    var GLYPH_SUCCESS = "glyph-success";
+    var GLYPH_FAILURE = "glyph-failure";
 
     // initialize all tooltips -- NOT WORKING
     $("[data-toggle=tooltip]").tooltip();
@@ -45,8 +50,9 @@ $(document).ready(function () {
                         removeExistingMessage();
                         displayRepositories(result.Git_repositories);
                         displayMavenModules(result.Maven_modules);
-                        checkIfRepositoriesAreUpToDate(result.Git_repositories);
+
                         // trigger git up to date check for repositories
+                        // checkIfRepositoriesAreUpToDate(result.Git_repositories);
                     }
                 },
                 202: function (result) {
@@ -90,7 +96,7 @@ $(document).ready(function () {
                     "<td>" + (i + 1) + "</td>" +
                     "<td>" + gitRepositories[i].name + "</td>" +
                     "<td>" +
-                        getDefaultGitRepositoryStatus(gitRepositories[i]) +
+                        getUnknownGitRepositoryStatus(gitRepositories[i]) +
                     "</td>" +
                     "</tr>"
                 );
@@ -158,6 +164,7 @@ $(document).ready(function () {
         }
     }
 
+    //not used
     function getGitRepositoryStatus(gitRepository) {
         switch (gitRepository.status) {
             case GIT_REPOSITORY_IS_AHEAD_OF_ORIGIN:
@@ -209,6 +216,20 @@ $(document).ready(function () {
         }
     }
 
+    function getUnknownGitRepositoryStatus(gitRepository) {
+
+        return "<button type=\"button\" class=\"btn btn-default btn-xs git-update-button\" " +
+                        "id=\"git-repository-" + gitRepository.name + "\" " +
+                        "name=\"" + gitRepository.name + "\" " +
+                        "path=\"" + gitRepository.path + "\" " +
+                        "data-toggle=\"tooltip\" " +
+                        "data-placement=\"right\" " +
+                        "title=\"Check for updates!\">" +
+                        "Check for updates" +
+                "</button>";
+    }
+
+    //not used
     function getDefaultGitRepositoryStatus(gitRepository) {
         return "<img src=\"./img/ajax-loader-grey.gif\"" +
             "id=\"git-repository-img-" + gitRepository.name + "\" " +
@@ -219,6 +240,7 @@ $(document).ready(function () {
             "title=\"Pending status check!\">";
     }
 
+    //not used
     function checkIfRepositoriesAreUpToDate(gitRepositories) {
         for (var i = 0; i < gitRepositories.length; i++) {
             $("#git-repository-img-" + gitRepositories[i].name).attr("src", "./img/ajax-loader-red.gif");
@@ -303,14 +325,12 @@ $(document).ready(function () {
         var buildStatus = response.status;
         var $mavenModuleSelector = $("#maven-module-" + response.name);
 
-        if ($mavenModuleSelector.next('span').length > 0) {
-            $mavenModuleSelector.next('span').remove();
-        }
+        removeMessageAfterTheButton($mavenModuleSelector);
 
         if (buildStatus === MAVEN_BUILD_SUCCESS) {
-            $mavenModuleSelector.after("<span class=\"glyphicon glyphicon-ok glyph-success\" aria-hidden=\"true\"></span>");
+            addGlyphiconAfterButton($mavenModuleSelector, MAVEN_BUILD_SUCCESS, GLYPH_SUCCESS);
         } else if (buildStatus === MAVEN_BUILD_FAIL) {
-            $mavenModuleSelector.after("<span class=\"glyphicon glyphicon-remove glyph-failure\" aria-hidden=\"true\"></span>");
+            addGlyphiconAfterButton($mavenModuleSelector, MAVEN_BUILD_FAIL, GLYPH_FAILURE);
         }
     }
 
@@ -319,6 +339,7 @@ $(document).ready(function () {
         var $gitButton = $(this);
 
         $gitButton.button('loading');
+        removeMessageAfterTheButton($gitButton);
 
         $.ajax({
             url: gitUrl,
@@ -336,7 +357,7 @@ $(document).ready(function () {
                     displayGitPullStatus(response);
                 },
                 202: function (response) {
-                    displayGitPullStatus(response);
+                    displayGitPullAspenRestException(response, $gitButton);
                     //AspenRestException(RestConstants.GIT_PULL_FAILED, Response.Status.ACCEPTED); - displayed per git repo
                     //AspenRestException(RestConstants.ERROR_BUILDING_GIT_INSTANCE, Response.Status.ACCEPTED) - displayed per git repo and page
                 },
@@ -355,19 +376,57 @@ $(document).ready(function () {
 
     function displayGitPullStatus(response) {
         var pullStatus = response.status;
-        var $mavenModuleSelector = $("#git-repository-" + response.name);
-
-        if ($mavenModuleSelector.next('span').length > 0) {
-            $mavenModuleSelector.next('span').remove();
-        }
+        var $gitRepositorySelector = $("#git-repository-" + response.name);
 
         if (pullStatus === GIT_PULL_SUCCESS) {
-            $mavenModuleSelector.after("<span class=\"glyphicon glyphicon-ok glyph-success\" aria-hidden=\"true\"></span>");
+            addGlyphiconAfterButton($gitRepositorySelector, GIT_PULL_SUCCESS, GLYPH_SUCCESS);
         } else if (pullStatus === GIT_PULL_FAILED) {
-            $mavenModuleSelector.after("<span class=\"glyphicon glyphicon-remove glyph-failure\" aria-hidden=\"true\"></span>");
+            addGlyphiconAfterButton($gitRepositorySelector, GIT_PULL_FAILED, GLYPH_SUCCESS);
         }
     }
 
+    function displayGitPullAspenRestException(response, $gitButton) {
+        switch (response.status) {
+            case GIT_REPOSITORY_NO_REMOTE_ORIGIN_FOUND_IN_THE_LOCAL_CONFIG:
+                // $gitButton.removeClass('btn-default');
+                // $gitButton.addClass('btn-warning');
+                addGlyphiconAfterButton($gitButton, GIT_REPOSITORY_NO_REMOTE_ORIGIN_FOUND_IN_THE_LOCAL_CONFIG, GLYPH_FAILURE);
+                break;
+            case GIT_ERROR_WHILE_UPDATING_REPOSITORY:
+                $gitButton.removeClass('btn-default');
+                $gitButton.addClass('btn-danger');
+                addGlyphiconAfterButton($gitButton, GIT_ERROR_WHILE_UPDATING_REPOSITORY, GLYPH_FAILURE);
+                break;
+            case ERROR_BUILDING_GIT_INSTANCE:
+                // $gitButton.removeClass('btn-default');
+                // $gitButton.addClass('btn-warning');
+                addGlyphiconAfterButton($gitButton, ERROR_BUILDING_GIT_INSTANCE, GLYPH_FAILURE);
+                break;
+        }
+    }
+
+    function addGlyphiconAfterButton($button, message, glyphiconType){
+        switch (glyphiconType) {
+            case GLYPH_SUCCESS:
+                $button.after(
+                    "<span class=\"glyphicon glyphicon-ok glyph-success\" aria-hidden=\"true\" title=\""+ message +"\" >" +
+                    "</span>"
+                );
+                break;
+            case GLYPH_FAILURE:
+                $button.after(
+                    "<span class=\"glyphicon glyphicon-remove glyph-failure\" aria-hidden=\"true\" title=\""+ message +"\" >" +
+                    "</span>"
+                );
+                break;
+        }
+    }
+
+    function removeMessageAfterTheButton($button){
+        if ($button.next('span').length > 0) {
+            $button.next('span').remove();
+        }
+    }
 
     /* ------------------- Common code ------------------- */
     function removeExistingMessage() {

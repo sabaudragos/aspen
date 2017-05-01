@@ -64,7 +64,7 @@ public class MavenServiceImpl implements MavenService {
         try {
             invocationResult = invoker.execute(request);
         } catch (MavenInvocationException e) {
-            log.error("Maven operation failed. {}", e);
+            log.error(RestConstants.MAVEN_INVOKER_FAILURE, e);
             throw new AspenRestException(RestConstants.MAVEN_INVOKER_FAILURE, Response.Status.ACCEPTED);
         }
 
@@ -73,13 +73,14 @@ public class MavenServiceImpl implements MavenService {
     }
 
     private String getMvnPath() {
-        if (System.getProperty("os.name").contains("Linux")) {
+        String operatingSystem = System.getProperty("os.name");
+        if (operatingSystem.contains("Linux")) {
             return extractPathVariable(System.getenv().get("PATH").split(":"));
-        } else if (System.getProperty("os.name").contains("Win")) {
+        } else if (operatingSystem.contains("Win")) {
             return extractPathVariable(System.getenv().get("Path").split(";"));
         }
 
-        log.error("Unsupported operating system");
+        log.error(String.format(RestConstants.UNSUPPORTED_OPERATING_SYSTEM + ": %s", operatingSystem));
         throw new AspenRestException(RestConstants.UNSUPPORTED_OPERATING_SYSTEM, Response.Status.ACCEPTED);
     }
 

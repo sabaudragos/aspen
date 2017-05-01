@@ -13,6 +13,7 @@ import lombok.Setter;
 public class Directory implements Comparable<Directory>{
     protected String path;
     protected String name;
+    protected String status;
 
     @Override
     public String toString() {

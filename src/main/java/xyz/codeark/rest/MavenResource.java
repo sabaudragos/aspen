@@ -45,7 +45,3 @@ public class MavenResource {
                 .build();
     }
 }
-// 3 basic green plants
-// "mother in law tong's" plant (sansevieria trifasciata) - bedroom plant -  6-8 per person (weist heigh)
-// areca palm (chrysalidocarpus lutescens) - the living room plant - 3 per person shoulder heigh
-// money plant (epipremnum aurem) - corn de iedera, potos sau iedera diavolului -

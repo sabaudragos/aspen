@@ -9,8 +9,9 @@ import lombok.Setter;
 @Getter
 @Setter
 public class Directory {
-    private String path;
-    private String name;
+    protected String path;
+    protected String name;
+    protected String status;
 
     @Override
     public String toString() {

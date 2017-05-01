@@ -51,7 +51,7 @@ public class GitResource {
                     .build();
         }
 
-        GitRepository gitRepository = gitService.isUpToDate(repositoryPath);
+        GitRepository gitRepository = gitService.checkRepositoryStatus(repositoryPath);
 
         if (gitRepository.getStatus().equals(RestConstants.GIT_NO_REMOTE_TRACKING_OF_BRANCH)){
             Response.status(Response.Status.ACCEPTED)
@@ -60,7 +60,7 @@ public class GitResource {
         }
 
         return Response.status(Response.Status.OK)
-                .entity(gitService.isUpToDate(repositoryPath))
+                .entity(gitService.checkRepositoryStatus(repositoryPath))
                 .build();
     }
 }

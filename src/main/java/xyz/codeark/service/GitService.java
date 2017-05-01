@@ -21,10 +21,12 @@ public interface GitService {
     /**
      * Creates a stash of the changes found in the
      *
-     * @param git the git repository
+     * @param git   the git repository
+     * @param path  the git repository's path
+     * @param name  the git repository's name
      * @return a commit reference
      */
-    RevCommit createStash(Git git);
+    RevCommit createStash(Git git, String path, String name);
 
     /**
      * Checks if the repository is up to date
@@ -32,5 +34,5 @@ public interface GitService {
      * @param repositoryPath    the git repository path
      * @return the dto for the repository (name, path and status of the repository (is up to date, behind or ahead origin))
      */
-    GitRepository isUpToDate(String repositoryPath);
+    GitRepository checkRepositoryStatus(String repositoryPath);
 }
