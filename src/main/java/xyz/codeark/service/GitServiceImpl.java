@@ -6,6 +6,8 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.PullResult;
 import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.api.errors.InvalidRemoteException;
+import org.eclipse.jgit.api.errors.TransportException;
 import org.eclipse.jgit.lib.BranchTrackingStatus;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Repository;
@@ -115,6 +117,9 @@ public class GitServiceImpl implements GitService {
         gitRepository.setName(repositoryName);
 
         try (Repository repository = getJGitRepository(repositoryPath)) {
+
+            fetchBranches(repository, repositoryPath, repositoryName);
+
             BranchTrackingStatus branchTrackingStatus =
                     BranchTrackingStatus.of(repository, repository.getFullBranch());
 
@@ -128,7 +133,7 @@ public class GitServiceImpl implements GitService {
             if (branchTrackingStatus.getBehindCount() > 0) {
                 // local branch is outdated, is behind origin by branchTrackingStatus.getBehindCount()
                 gitRepository.setStatus(RestConstants.GIT_REPOSITORY_IS_BEHIND_OF_ORIGIN);
-                log.debug(RestConstants.GIT_REPOSITORY_IS_BEHIND_OF_ORIGIN);
+                log.debug(RestConstants.GIT_REPOSITORY_IS_BEHIND_OF_ORIGIN + ": " + repositoryName);
 
                 return gitRepository;
             }
@@ -136,7 +141,7 @@ public class GitServiceImpl implements GitService {
             if (branchTrackingStatus.getAheadCount() > 0) {
                 // local branch NOT outdated, is ahead origin by branchTrackingStatus.getAheadCount()
                 gitRepository.setStatus(RestConstants.GIT_REPOSITORY_IS_AHEAD_OF_ORIGIN);
-                log.debug(RestConstants.GIT_REPOSITORY_IS_AHEAD_OF_ORIGIN);
+                log.debug(RestConstants.GIT_REPOSITORY_IS_AHEAD_OF_ORIGIN + ": " + repositoryName);
 
                 return gitRepository;
             }
@@ -150,10 +155,38 @@ public class GitServiceImpl implements GitService {
                     repositoryName);
         }
 
-        log.debug(RestConstants.GIT_REPOSITORY_IS_UP_TO_DATE);
+        log.debug(RestConstants.GIT_REPOSITORY_IS_UP_TO_DATE + ": " + repositoryName);
         gitRepository.setStatus(RestConstants.GIT_REPOSITORY_IS_UP_TO_DATE);
 
         return gitRepository;
+    }
+
+    private void fetchBranches(Repository repository, String repositoryPath, String repositoryName) {
+        log.info(String.format("Fetching branches for repository: %s", repositoryName));
+        try (Git git = new Git(repository)) {
+            git.fetch().call();
+        } catch (InvalidRemoteException e) {
+            log.error(RestConstants.ERROR_FETCHING_INVALID_REMOTE + " Repository name: " + repositoryName, e);
+            throw new AspenRestException(
+                    RestConstants.ERROR_FETCHING_INVALID_REMOTE,
+                    Response.Status.ACCEPTED,
+                    repositoryPath,
+                    repositoryName);
+        } catch (TransportException e) {
+            log.error(RestConstants.ERROR_FETCHING_TRANSPORT_FAILED + " Repository name: " + repositoryName, e);
+            throw new AspenRestException(
+                    RestConstants.ERROR_FETCHING_TRANSPORT_FAILED,
+                    Response.Status.ACCEPTED,
+                    repositoryPath,
+                    repositoryName);
+        } catch (GitAPIException e) {
+            log.error(RestConstants.ERROR_FETCHING_GITAPI_EXCEPTION + " Repository name: " + repositoryName, e);
+            throw new AspenRestException(
+                    RestConstants.ERROR_FETCHING_GITAPI_EXCEPTION,
+                    Response.Status.ACCEPTED,
+                    repositoryPath,
+                    repositoryName);
+        }
     }
 
     private Repository getJGitRepository(String repositoryPath) throws IOException {

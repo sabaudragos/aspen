@@ -41,6 +41,9 @@ public class RestConstants {
     public static final String GIT_REPOSITORY_NO_REMOTE_ORIGIN_FOUND_IN_THE_LOCAL_CONFIG = "No remote origin found in the local git config file";
     public static final String GIT_ERROR_WHILE_UPDATING_REPOSITORY = "Error while updating the repository";
     public static final String ERROR_BUILDING_GIT_INSTANCE = "Error while building a Git instance";
+    public static final String ERROR_FETCHING_INVALID_REMOTE = "Error while fetching remote branches. Invalid remote.";
+    public static final String ERROR_FETCHING_TRANSPORT_FAILED = "Error while fetching remote branches. Transport operation failed.";
+    public static final String ERROR_FETCHING_GITAPI_EXCEPTION = "Error while fetching remote branches. GIT API exception.";
     public static final String ERROR_WHILE_STASHING_CHANGES = "Error while stashing the changes";
     public static final String ERROR_WHILE_CHECKING_BRANCH_STATUS = "Error while checking the status";
 }
