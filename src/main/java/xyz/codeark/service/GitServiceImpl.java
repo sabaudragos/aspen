@@ -115,40 +115,32 @@ public class GitServiceImpl implements GitService {
         gitRepository.setName(repositoryName);
 
         try (Repository repository = getJGitRepository(repositoryPath)) {
-            try (Git git = new Git(repository)) {
-                BranchTrackingStatus branchTrackingStatus =
-                        BranchTrackingStatus.of(git.getRepository(), git.getRepository().getFullBranch());
+            BranchTrackingStatus branchTrackingStatus =
+                    BranchTrackingStatus.of(repository, repository.getFullBranch());
 
-                if (branchTrackingStatus == null) {
-                    gitRepository.setStatus(RestConstants.GIT_NO_REMOTE_TRACKING_OF_BRANCH);
-                    log.debug(RestConstants.GIT_NO_REMOTE_TRACKING_OF_BRANCH);
+            if (branchTrackingStatus == null) {
+                gitRepository.setStatus(RestConstants.GIT_NO_REMOTE_TRACKING_OF_BRANCH);
+                log.debug(RestConstants.GIT_NO_REMOTE_TRACKING_OF_BRANCH);
 
-                    return gitRepository;
-                }
-
-                if (branchTrackingStatus.getBehindCount() > 0) {
-                    // local branch is outdated, is behind origin by branchTrackingStatus.getBehindCount()
-                    gitRepository.setStatus(RestConstants.GIT_REPOSITORY_IS_BEHIND_OF_ORIGIN);
-                    log.debug(RestConstants.GIT_REPOSITORY_IS_BEHIND_OF_ORIGIN);
-
-                    return gitRepository;
-                }
-
-                if (branchTrackingStatus.getBehindCount() > 0) {
-                    // local branch NOT outdated, is ahead origin by branchTrackingStatus.getBehindCount()
-                    gitRepository.setStatus(RestConstants.GIT_REPOSITORY_IS_AHEAD_OF_ORIGIN);
-                    log.debug(RestConstants.GIT_REPOSITORY_IS_AHEAD_OF_ORIGIN);
-
-                    return gitRepository;
-                }
-            } catch (IOException e) {
-                log.error("Error while checking the status of {}", gitRepository.getName());
-                throw new AspenRestException(
-                        RestConstants.ERROR_WHILE_CHECKING_BRANCH_STATUS,
-                        Response.Status.ACCEPTED,
-                        repositoryPath,
-                        repositoryName);
+                return gitRepository;
             }
+
+            if (branchTrackingStatus.getBehindCount() > 0) {
+                // local branch is outdated, is behind origin by branchTrackingStatus.getBehindCount()
+                gitRepository.setStatus(RestConstants.GIT_REPOSITORY_IS_BEHIND_OF_ORIGIN);
+                log.debug(RestConstants.GIT_REPOSITORY_IS_BEHIND_OF_ORIGIN);
+
+                return gitRepository;
+            }
+
+            if (branchTrackingStatus.getAheadCount() > 0) {
+                // local branch NOT outdated, is ahead origin by branchTrackingStatus.getAheadCount()
+                gitRepository.setStatus(RestConstants.GIT_REPOSITORY_IS_AHEAD_OF_ORIGIN);
+                log.debug(RestConstants.GIT_REPOSITORY_IS_AHEAD_OF_ORIGIN);
+
+                return gitRepository;
+            }
+
         } catch (IOException e) {
             log.error("Error while building a git instance", e);
             throw new AspenRestException(

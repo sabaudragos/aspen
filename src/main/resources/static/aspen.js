@@ -52,7 +52,7 @@ $(document).ready(function () {
                         displayMavenModules(result.Maven_modules);
 
                         // trigger git up to date check for repositories
-                        // checkIfRepositoriesAreUpToDate(result.Git_repositories);
+                        checkIfRepositoriesAreUpToDate(result.Git_repositories);
                     }
                 },
                 202: function (result) {
@@ -254,12 +254,12 @@ $(document).ready(function () {
 
                 statusCode: {
                     200: function (result) {
-                        var $gitRepositorySelector = $("#git-repository-img-" + result.name)
+                        var $gitRepositorySelector = $("#git-repository-img-" + result.name);
                         $gitRepositorySelector.before(getGitRepositoryStatus(result));
                         $gitRepositorySelector.remove();
                     },
                     202: function (result) {
-                        var $gitRepositorySelector = $("#git-repository-img-" + result.name)
+                        var $gitRepositorySelector = $("#git-repository-img-" + result.name);
                         $gitRepositorySelector.before(getGitRepositoryStatus(result));
                         $gitRepositorySelector.remove();
 
