@@ -19,7 +19,7 @@ $(document).ready(function () {
     var ERROR_BUILDING_GIT_INSTANCE = "Error while building a Git instance";
     var GIT_REPOSITORY_IS_UP_TO_DATE = "Git repository is up to date with origin";
     var GIT_REPOSITORY_IS_AHEAD_OF_ORIGIN = "Git repository is ahead origin";
-    var GIT_REPOSITORY_IS_BEHIND_OF_ORIGIN = "Git repository is behind origin";
+    var GIT_REPOSITORY_IS_BEHIND_ORIGIN = "Git repository is behind origin";
     var ERROR_WHILE_STASHING_CHANGES = "Error while stashing the changes";
     var ERROR_WHILE_CHECKING_BRANCH_STATUS = "Error while checking the status";
     var NO_MAVEN_MODULES_AND_NO_GIT_REPOSITORIES_FOUND = "No maven modules and no git repositories found";
@@ -45,7 +45,7 @@ $(document).ready(function () {
 
             statusCode: {
                 200: function (result) {
-                    if ((result.Git_repositories.length===0) || (result.Maven_modules.length===0)) {
+                    if ((result.Git_repositories.length === 0) || (result.Maven_modules.length === 0)) {
                         removeExistingMessage();
                         displayErrorMessage(NO_MAVEN_MODULES_AND_NO_GIT_REPOSITORIES_FOUND);
                         removeDiscoveredDirectories();
@@ -99,7 +99,7 @@ $(document).ready(function () {
                     "<td>" + (i + 1) + "</td>" +
                     "<td>" + gitRepositories[i].name + "</td>" +
                     "<td>" +
-                        getDefaultGitRepositoryStatus(gitRepositories[i]) +
+                    getDefaultGitRepositoryStatus(gitRepositories[i]) +
                     "</td>" +
                     "</tr>"
                 );
@@ -140,7 +140,7 @@ $(document).ready(function () {
                     "path=\"" + mvnModules[i].path + "\" " +
                     "data-toggle=\"tooltip\" " +
                     "data-placement=\"right\" " +
-                    "data-loading-text=\"<i class='fa fa-spinner fa-spin '></i>Building...\""+
+                    "data-loading-text=\"<i class='fa fa-spinner fa-spin '></i>Building...\"" +
                     "title=\"Click to build. No tests!\">" +
                     "Build" +
                     "</button>" +
@@ -170,41 +170,36 @@ $(document).ready(function () {
     function getGitRepositoryStatus(gitRepository) {
         switch (gitRepository.status) {
             case GIT_REPOSITORY_IS_AHEAD_OF_ORIGIN:
-                //business logic - Up to date - ahead origin
                 return createGitButton(gitRepository.name,
-                    gitRepository.path,
-                    GIT_UP_TO_DATE_BUTTON_NAME,
-                    TOOL_TIP_CLICK_TO_RE_CHECK,
-                    "btn-success"
-                ) + createGlyphIcon(GIT_REPOSITORY_IS_AHEAD_OF_ORIGIN, GLYPH_SUCCESS);
+                        gitRepository.path,
+                        GIT_UP_TO_DATE_BUTTON_NAME,
+                        TOOL_TIP_CLICK_TO_RE_CHECK,
+                        "btn-success"
+                    ) + createGlyphIcon(GIT_REPOSITORY_IS_AHEAD_OF_ORIGIN, GLYPH_SUCCESS);
             case GIT_REPOSITORY_IS_UP_TO_DATE:
-                // up to date
                 return createGitButton(gitRepository.name,
-                    gitRepository.path,
-                    GIT_UP_TO_DATE_BUTTON_NAME,
-                    TOOL_TIP_CLICK_TO_RE_CHECK,
-                    "btn-success") + createGlyphIcon(GIT_REPOSITORY_IS_UP_TO_DATE, GLYPH_SUCCESS);
-            case GIT_REPOSITORY_IS_BEHIND_OF_ORIGIN:
-                // business logic - out of date
+                        gitRepository.path,
+                        GIT_UP_TO_DATE_BUTTON_NAME,
+                        TOOL_TIP_CLICK_TO_RE_CHECK,
+                        "btn-success") + createGlyphIcon(GIT_REPOSITORY_IS_UP_TO_DATE, GLYPH_SUCCESS);
+            case GIT_REPOSITORY_IS_BEHIND_ORIGIN:
                 return createGitButton(gitRepository.name,
-                    gitRepository.path,
-                    "Out of date",
-                    "Click to update!",
-                    "btn-danger") + createGlyphIcon(GIT_REPOSITORY_IS_BEHIND_OF_ORIGIN, GLYPH_FAILURE);
+                        gitRepository.path,
+                        "Out of date",
+                        "Click to update!",
+                        "btn-danger") + createGlyphIcon(GIT_REPOSITORY_IS_BEHIND_ORIGIN, GLYPH_FAILURE);
             case GIT_NO_REMOTE_TRACKING_OF_BRANCH:
-                // business logic - unknown
                 return createGitButton(gitRepository.name,
-                    gitRepository.path,
-                    GIT_UNKNOWN_BUTTON_NAME,
-                    TOOL_TIP_CLICK_TO_RE_CHECK,
-                    "btn-warning") + createGlyphIcon(GIT_NO_REMOTE_TRACKING_OF_BRANCH, GLYPH_FAILURE);
+                        gitRepository.path,
+                        GIT_UNKNOWN_BUTTON_NAME,
+                        TOOL_TIP_CLICK_TO_RE_CHECK,
+                        "btn-warning") + createGlyphIcon(GIT_NO_REMOTE_TRACKING_OF_BRANCH, GLYPH_FAILURE);
             case GIT_REPOSITORY_NO_REMOTE_ORIGIN_FOUND_IN_THE_LOCAL_CONFIG:
-                // business logic - unknown
                 return createGitButton(gitRepository.name,
-                    gitRepository.path,
-                    GIT_UNKNOWN_BUTTON_NAME,
-                    TOOL_TIP_CLICK_TO_RE_CHECK,
-                    "btn-warning") + createGlyphIcon(GIT_REPOSITORY_NO_REMOTE_ORIGIN_FOUND_IN_THE_LOCAL_CONFIG, GLYPH_FAILURE);
+                        gitRepository.path,
+                        GIT_UNKNOWN_BUTTON_NAME,
+                        TOOL_TIP_CLICK_TO_RE_CHECK,
+                        "btn-warning") + createGlyphIcon(GIT_REPOSITORY_NO_REMOTE_ORIGIN_FOUND_IN_THE_LOCAL_CONFIG, GLYPH_FAILURE);
         }
     }
 
@@ -318,9 +313,9 @@ $(document).ready(function () {
         removeMessageAfterTheButton($mavenModuleSelector);
 
         if (buildStatus === MAVEN_BUILD_SUCCESS) {
-            addGlyphiconAfterButton($mavenModuleSelector, MAVEN_BUILD_SUCCESS, GLYPH_SUCCESS);
+            $mavenModuleSelector.after(createGlyphIcon(MAVEN_BUILD_SUCCESS, GLYPH_SUCCESS));
         } else if (buildStatus === MAVEN_BUILD_FAIL) {
-            addGlyphiconAfterButton($mavenModuleSelector, MAVEN_BUILD_FAIL, GLYPH_FAILURE);
+            $mavenModuleSelector.after(createGlyphIcon(MAVEN_BUILD_FAIL, GLYPH_FAILURE));
         }
     }
 
@@ -348,8 +343,6 @@ $(document).ready(function () {
                 },
                 202: function (response) {
                     displayGitPullAspenRestException(response, $gitButton);
-                    //AspenRestException(RestConstants.GIT_PULL_FAILED, Response.Status.ACCEPTED); - displayed per git repo
-                    //AspenRestException(RestConstants.ERROR_BUILDING_GIT_INSTANCE, Response.Status.ACCEPTED) - displayed per git repo and page
                 },
                 400: function (response) {
                     //TODO needs refactoring
@@ -363,56 +356,44 @@ $(document).ready(function () {
     });
 
 
-
     function displayGitPullStatus(response) {
         var pullStatus = response.status;
         var $gitRepositorySelector = $("#git-repository-" + response.name);
 
         if (pullStatus === GIT_PULL_SUCCESS) {
-            addGlyphiconAfterButton($gitRepositorySelector, GIT_PULL_SUCCESS, GLYPH_SUCCESS);
+            $gitRepositorySelector.after(createGlyphIcon(GIT_PULL_SUCCESS, GLYPH_SUCCESS));
         } else if (pullStatus === GIT_PULL_FAILED) {
-            addGlyphiconAfterButton($gitRepositorySelector, GIT_PULL_FAILED, GLYPH_SUCCESS);
+            $gitRepositorySelector.after(createGlyphIcon(GIT_PULL_FAILED, GLYPH_FAILURE));
         }
     }
-
 
 
     function displayGitPullAspenRestException(response, $gitButton) {
         switch (response.status) {
             case GIT_REPOSITORY_NO_REMOTE_ORIGIN_FOUND_IN_THE_LOCAL_CONFIG:
-                // $gitButton.removeClass('btn-default');
-                // $gitButton.addClass('btn-warning');
-                addGlyphiconAfterButton($gitButton, GIT_REPOSITORY_NO_REMOTE_ORIGIN_FOUND_IN_THE_LOCAL_CONFIG, GLYPH_FAILURE);
+                $gitButton.after(createGlyphIcon(GIT_REPOSITORY_NO_REMOTE_ORIGIN_FOUND_IN_THE_LOCAL_CONFIG, GLYPH_FAILURE));
                 break;
             case GIT_ERROR_WHILE_UPDATING_REPOSITORY:
-                $gitButton.removeClass('btn-default');
-                $gitButton.addClass('btn-danger');
-                addGlyphiconAfterButton($gitButton, GIT_ERROR_WHILE_UPDATING_REPOSITORY, GLYPH_FAILURE);
+                $gitButton.after(createGlyphIcon(GIT_ERROR_WHILE_UPDATING_REPOSITORY, GLYPH_FAILURE));
                 break;
             case ERROR_BUILDING_GIT_INSTANCE:
-                // $gitButton.removeClass('btn-default');
-                // $gitButton.addClass('btn-warning');
-                addGlyphiconAfterButton($gitButton, ERROR_BUILDING_GIT_INSTANCE, GLYPH_FAILURE);
+                $gitButton.after(createGlyphIcon(ERROR_BUILDING_GIT_INSTANCE, GLYPH_FAILURE));
                 break;
         }
-    }
-
-    function addGlyphiconAfterButton($button, message, glyphiconType){
-        $button.after(createGlyphIcon(message, glyphiconType));
     }
 
     function createGlyphIcon(message, glypiconType) {
         switch (glypiconType) {
             case GLYPH_FAILURE:
-                return "<span class=\"glyphicon glyphicon-remove " + glypiconType + "\" aria-hidden=\"true\" title=\""+ message +"\" >" +
+                return "<span class=\"glyphicon glyphicon-remove " + glypiconType + "\" aria-hidden=\"true\" title=\"" + message + "\" >" +
                     "</span>";
             case GLYPH_SUCCESS:
-                return "<span class=\"glyphicon glyphicon-ok " + glypiconType + "\" aria-hidden=\"true\" title=\""+ message +"\" >" +
-                "</span>";
+                return "<span class=\"glyphicon glyphicon-ok " + glypiconType + "\" aria-hidden=\"true\" title=\"" + message + "\" >" +
+                    "</span>";
         }
     }
 
-    function removeMessageAfterTheButton($button){
+    function removeMessageAfterTheButton($button) {
         if ($button.next('span').length > 0) {
             $button.next('span').remove();
         }
