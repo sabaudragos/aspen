@@ -60,7 +60,7 @@ public class GitResource {
         }
 
         return Response.status(Response.Status.OK)
-                .entity(gitService.checkRepositoryStatus(repositoryPath))
+                .entity(gitRepository)
                 .build();
     }
 }

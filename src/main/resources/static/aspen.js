@@ -25,6 +25,9 @@ $(document).ready(function () {
     var NO_MAVEN_MODULES_AND_NO_GIT_REPOSITORIES_FOUND = "No maven modules and no git repositories found";
     var GLYPH_SUCCESS = "glyph-success";
     var GLYPH_FAILURE = "glyph-failure";
+    var TOOL_TIP_CLICK_TO_RE_CHECK = "Click to re-check!";
+    var GIT_UNKNOWN_BUTTON_NAME = "Unknown";
+    var GIT_UP_TO_DATE_BUTTON_NAME = "Up to date";
 
     // initialize all tooltips -- NOT WORKING
     $("[data-toggle=tooltip]").tooltip();
@@ -96,7 +99,7 @@ $(document).ready(function () {
                     "<td>" + (i + 1) + "</td>" +
                     "<td>" + gitRepositories[i].name + "</td>" +
                     "<td>" +
-                        getUnknownGitRepositoryStatus(gitRepositories[i]) +
+                        getDefaultGitRepositoryStatus(gitRepositories[i]) +
                     "</td>" +
                     "</tr>"
                 );
@@ -164,72 +167,61 @@ $(document).ready(function () {
         }
     }
 
-    //not used
     function getGitRepositoryStatus(gitRepository) {
         switch (gitRepository.status) {
             case GIT_REPOSITORY_IS_AHEAD_OF_ORIGIN:
                 //business logic - Up to date - ahead origin
-                return "<button type=\"button\" class=\"btn btn-success btn-xs git-update-button\" " +
-                    "name=\"" + gitRepository.name + "\" " +
-                    "path=\"" + gitRepository.path + "\" " +
-                    "data-toggle=\"tooltip\" " +
-                    "data-placement=\"right\" " +
-                    "data-loading-text=\"<i class='fa fa-spinner fa-spin '></i>Checking...\""+
-                    "title=\"Click to re-check!\">" +
-                    "Up to date" +
-                    "</button>" + " - ahead origin";
+                return createGitButton(gitRepository.name,
+                    gitRepository.path,
+                    GIT_UP_TO_DATE_BUTTON_NAME,
+                    TOOL_TIP_CLICK_TO_RE_CHECK,
+                    "btn-success"
+                ) + createGlyphIcon(GIT_REPOSITORY_IS_AHEAD_OF_ORIGIN, GLYPH_SUCCESS);
             case GIT_REPOSITORY_IS_UP_TO_DATE:
                 // up to date
-                return "<button type=\"button\" class=\"btn btn-success btn-xs git-update-button\" " +
-                    "name=\"" + gitRepository.name + "\" " +
-                    "path=\"" + gitRepository.path + "\" " +
-                    "data-toggle=\"tooltip\" " +
-                    "data-placement=\"right\" " +
-                    "data-loading-text=\"<i class='fa fa-spinner fa-spin '></i>Checking...\""+
-                    "title=\"Click to re-check!\">" +
-                    "Up to date" +
-                    "</button>";
+                return createGitButton(gitRepository.name,
+                    gitRepository.path,
+                    GIT_UP_TO_DATE_BUTTON_NAME,
+                    TOOL_TIP_CLICK_TO_RE_CHECK,
+                    "btn-success") + createGlyphIcon(GIT_REPOSITORY_IS_UP_TO_DATE, GLYPH_SUCCESS);
             case GIT_REPOSITORY_IS_BEHIND_OF_ORIGIN:
                 // business logic - out of date
-                return "<button type=\"button\" class=\"btn btn-danger btn-xs git-update-button\" " +
-                    "id=\"git-repository-" + gitRepository.name + "\" " +
-                    "name=\"" + gitRepository.name + "\" " +
-                    "path=\"" + gitRepository.path + "\" " +
-                    "data-toggle=\"tooltip\" " +
-                    "data-placement=\"right\" " +
-                    "data-loading-text=\"<i class='fa fa-spinner fa-spin '></i>Checking...\"" +
-                    "title=\"Click to update!\">" +
-                    "Out of date" +
-                    "</button>" + " - behind origin";
+                return createGitButton(gitRepository.name,
+                    gitRepository.path,
+                    "Out of date",
+                    "Click to update!",
+                    "btn-danger") + createGlyphIcon(GIT_REPOSITORY_IS_BEHIND_OF_ORIGIN, GLYPH_FAILURE);
             case GIT_NO_REMOTE_TRACKING_OF_BRANCH:
-                // business logic - out of date
-                return "<button type=\"button\" class=\"btn btn-danger btn-xs git-update-button\" " +
-                    "id=\"git-repository-" + gitRepository.name + "\" " +
-                    "name=\"" + gitRepository.name + "\" " +
-                    "path=\"" + gitRepository.path + "\" " +
-                    "data-toggle=\"tooltip\" " +
-                    "data-placement=\"right\" " +
-                    "data-loading-text=\"<i class='fa fa-spinner fa-spin '></i>Checking...\"" +
-                    "title=\"Click to re-check!\">" +
-                    "Unkown" +
-                    "</button>" + " - likely no remote tracking branch";
+                // business logic - unknown
+                return createGitButton(gitRepository.name,
+                    gitRepository.path,
+                    GIT_UNKNOWN_BUTTON_NAME,
+                    TOOL_TIP_CLICK_TO_RE_CHECK,
+                    "btn-warning") + createGlyphIcon(GIT_NO_REMOTE_TRACKING_OF_BRANCH, GLYPH_FAILURE);
+            case GIT_REPOSITORY_NO_REMOTE_ORIGIN_FOUND_IN_THE_LOCAL_CONFIG:
+                // business logic - unknown
+                return createGitButton(gitRepository.name,
+                    gitRepository.path,
+                    GIT_UNKNOWN_BUTTON_NAME,
+                    TOOL_TIP_CLICK_TO_RE_CHECK,
+                    "btn-warning") + createGlyphIcon(GIT_REPOSITORY_NO_REMOTE_ORIGIN_FOUND_IN_THE_LOCAL_CONFIG, GLYPH_FAILURE);
         }
     }
 
-    function getUnknownGitRepositoryStatus(gitRepository) {
+    function createGitButton(repositoryName, repositoryPath, buttonName, toolTip, buttonClass) {
 
-        return "<button type=\"button\" class=\"btn btn-default btn-xs git-update-button\" " +
-                        "id=\"git-repository-" + gitRepository.name + "\" " +
-                        "name=\"" + gitRepository.name + "\" " +
-                        "path=\"" + gitRepository.path + "\" " +
-                        "data-toggle=\"tooltip\" " +
-                        "data-placement=\"right\" " +
-                        "title=\"Check for updates!\">" +
-                        "Check for updates" +
-                "</button>";
+        return "<button type=\"button\" class=\"btn " + buttonClass + " btn-xs git-update-button git-button-fixed-width \" " +
+            "id=\"git-repository-" + repositoryName + "\" " +
+            "name=\"" + repositoryName + "\" " +
+            "path=\"" + repositoryPath + "\" " +
+            "data-toggle=\"tooltip\" " +
+            "data-placement=\"right\" " +
+            "data-loading-text=\"<i class='fa fa-spinner fa-spin '></i>Checking...\"" +
+            "title=\"" + toolTip + "\">" +
+            buttonName +
+            "</button>";
     }
 
-    //not used
     function getDefaultGitRepositoryStatus(gitRepository) {
         return "<img src=\"./img/ajax-loader-grey.gif\"" +
             "id=\"git-repository-img-" + gitRepository.name + "\" " +
@@ -240,7 +232,6 @@ $(document).ready(function () {
             "title=\"Pending status check!\">";
     }
 
-    //not used
     function checkIfRepositoriesAreUpToDate(gitRepositories) {
         for (var i = 0; i < gitRepositories.length; i++) {
             $("#git-repository-img-" + gitRepositories[i].name).attr("src", "./img/ajax-loader-red.gif");
@@ -262,7 +253,6 @@ $(document).ready(function () {
                         var $gitRepositorySelector = $("#git-repository-img-" + result.name);
                         $gitRepositorySelector.before(getGitRepositoryStatus(result));
                         $gitRepositorySelector.remove();
-
                     },
                     400: function (result) {
                         //TODO
@@ -385,6 +375,8 @@ $(document).ready(function () {
         }
     }
 
+
+
     function displayGitPullAspenRestException(response, $gitButton) {
         switch (response.status) {
             case GIT_REPOSITORY_NO_REMOTE_ORIGIN_FOUND_IN_THE_LOCAL_CONFIG:
@@ -406,19 +398,17 @@ $(document).ready(function () {
     }
 
     function addGlyphiconAfterButton($button, message, glyphiconType){
-        switch (glyphiconType) {
-            case GLYPH_SUCCESS:
-                $button.after(
-                    "<span class=\"glyphicon glyphicon-ok glyph-success\" aria-hidden=\"true\" title=\""+ message +"\" >" +
-                    "</span>"
-                );
-                break;
+        $button.after(createGlyphIcon(message, glyphiconType));
+    }
+
+    function createGlyphIcon(message, glypiconType) {
+        switch (glypiconType) {
             case GLYPH_FAILURE:
-                $button.after(
-                    "<span class=\"glyphicon glyphicon-remove glyph-failure\" aria-hidden=\"true\" title=\""+ message +"\" >" +
-                    "</span>"
-                );
-                break;
+                return "<span class=\"glyphicon glyphicon-remove " + glypiconType + "\" aria-hidden=\"true\" title=\""+ message +"\" >" +
+                    "</span>";
+            case GLYPH_SUCCESS:
+                return "<span class=\"glyphicon glyphicon-ok " + glypiconType + "\" aria-hidden=\"true\" title=\""+ message +"\" >" +
+                "</span>";
         }
     }
 

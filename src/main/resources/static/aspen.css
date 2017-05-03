@@ -14,10 +14,14 @@
     color: #c9302c;
 }
 
+.git-button-fixed-width {
+    width: 71px;
+}
+
 .git-button-grey-ajax-loader {
-    content:url("./img/ajax-loader-grey.gif");
+    content: url("./img/ajax-loader-grey.gif");
 }
 
 .git-button-red-ajax-loader {
-    content:url("./img/ajax-loader-red.gif");
+    content: url("./img/ajax-loader-red.gif");
 }

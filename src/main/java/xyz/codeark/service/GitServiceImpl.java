@@ -117,7 +117,14 @@ public class GitServiceImpl implements GitService {
         gitRepository.setName(repositoryName);
 
         try (Repository repository = getJGitRepository(repositoryPath)) {
-
+            if (CollectionUtils.isEmpty(repository.getRemoteNames())) {
+                log.debug(String.format(RestConstants.GIT_REPOSITORY_NO_REMOTE_ORIGIN_FOUND_IN_THE_LOCAL_CONFIG + " Repository name: %s", repositoryName));
+                throw new AspenRestException(
+                        RestConstants.GIT_REPOSITORY_NO_REMOTE_ORIGIN_FOUND_IN_THE_LOCAL_CONFIG,
+                        Response.Status.ACCEPTED,
+                        repositoryPath,
+                        repositoryName);
+            }
             fetchBranches(repository, repositoryPath, repositoryName);
 
             BranchTrackingStatus branchTrackingStatus =
