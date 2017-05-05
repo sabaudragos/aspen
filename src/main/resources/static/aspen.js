@@ -22,7 +22,10 @@ $(document).ready(function () {
     var GIT_REPOSITORY_IS_BEHIND_ORIGIN = "Git repository is behind origin";
     var ERROR_WHILE_STASHING_CHANGES = "Error while stashing the changes";
     var ERROR_WHILE_CHECKING_BRANCH_STATUS = "Error while checking the status";
+    var ERROR_FETCHING_INVALID_REMOTE = "Error while fetching remote branches. Invalid remote.";
     var NO_MAVEN_MODULES_AND_NO_GIT_REPOSITORIES_FOUND = "No maven modules and no git repositories found";
+    var ERROR_FETCHING_TRANSPORT_FAILED = "Error while fetching remote branches. Transport operation failed.";
+    var ERROR_FETCHING_GITAPI_EXCEPTION = "Error while fetching remote branches. GIT API exception.";
     var GLYPH_SUCCESS = "glyph-success";
     var GLYPH_FAILURE = "glyph-failure";
     var TOOL_TIP_CLICK_TO_RE_CHECK = "Click to re-check!";
@@ -200,6 +203,30 @@ $(document).ready(function () {
                         GIT_UNKNOWN_BUTTON_NAME,
                         TOOL_TIP_CLICK_TO_RE_CHECK,
                         "btn-warning") + createGlyphIcon(GIT_REPOSITORY_NO_REMOTE_ORIGIN_FOUND_IN_THE_LOCAL_CONFIG, GLYPH_FAILURE);
+            case ERROR_WHILE_STASHING_CHANGES:
+                return createGitButton(gitRepository.name,
+                        gitRepository.path,
+                        GIT_UNKNOWN_BUTTON_NAME,
+                        TOOL_TIP_CLICK_TO_RE_CHECK,
+                        "btn-warning") + createGlyphIcon(ERROR_WHILE_STASHING_CHANGES, GLYPH_FAILURE);
+            case ERROR_FETCHING_INVALID_REMOTE:
+                return createGitButton(gitRepository.name,
+                        gitRepository.path,
+                        GIT_UNKNOWN_BUTTON_NAME,
+                        TOOL_TIP_CLICK_TO_RE_CHECK,
+                        "btn-warning") + createGlyphIcon(ERROR_FETCHING_INVALID_REMOTE, GLYPH_FAILURE);
+            case ERROR_FETCHING_TRANSPORT_FAILED:
+                return createGitButton(gitRepository.name,
+                        gitRepository.path,
+                        GIT_UNKNOWN_BUTTON_NAME,
+                        TOOL_TIP_CLICK_TO_RE_CHECK,
+                        "btn-warning") + createGlyphIcon(ERROR_FETCHING_TRANSPORT_FAILED, GLYPH_FAILURE);
+            case ERROR_FETCHING_GITAPI_EXCEPTION:
+                return createGitButton(gitRepository.name,
+                        gitRepository.path,
+                        GIT_UNKNOWN_BUTTON_NAME,
+                        TOOL_TIP_CLICK_TO_RE_CHECK,
+                        "btn-warning") + createGlyphIcon(ERROR_FETCHING_GITAPI_EXCEPTION, GLYPH_FAILURE);
         }
     }
 

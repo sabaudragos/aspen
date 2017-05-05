@@ -5,9 +5,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.PullResult;
 import org.eclipse.jgit.api.Status;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.api.errors.InvalidRemoteException;
-import org.eclipse.jgit.api.errors.TransportException;
+import org.eclipse.jgit.api.errors.*;
 import org.eclipse.jgit.lib.BranchTrackingStatus;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Repository;
@@ -139,8 +137,8 @@ public class GitServiceImpl implements GitService {
 
             if (branchTrackingStatus.getBehindCount() > 0) {
                 // local branch is outdated, is behind origin by branchTrackingStatus.getBehindCount()
-                gitRepository.setStatus(RestConstants.GIT_REPOSITORY_IS_BEHIND_OF_ORIGIN);
-                log.debug(RestConstants.GIT_REPOSITORY_IS_BEHIND_OF_ORIGIN + ": " + repositoryName);
+                gitRepository.setStatus(RestConstants.GIT_REPOSITORY_IS_BEHIND_ORIGIN);
+                log.debug(RestConstants.GIT_REPOSITORY_IS_BEHIND_ORIGIN + ": " + repositoryName);
 
                 return gitRepository;
             }
