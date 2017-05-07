@@ -42,7 +42,9 @@ public class GitResource {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response checkIfRepositoryIsUpToDate(
-            @QueryParam("repositoryPath") String repositoryPath) {
+            @QueryParam("repositoryPath") String repositoryPath,
+            @DefaultValue("") @QueryParam("password") String password,
+            @DefaultValue("") @QueryParam("username") String username) {
 
         if ((StringUtils.isEmpty(repositoryPath)) || (Files.notExists(Paths.get(repositoryPath)))) {
             log.error("Invalid git repository path {}", repositoryPath);
@@ -51,7 +53,7 @@ public class GitResource {
                     .build();
         }
 
-        GitRepository gitRepository = gitService.checkRepositoryStatus(repositoryPath);
+        GitRepository gitRepository = gitService.checkRepositoryStatus(repositoryPath, username, password);
 
         if (gitRepository.getStatus().equals(RestConstants.GIT_NO_REMOTE_TRACKING_OF_BRANCH)){
             Response.status(Response.Status.ACCEPTED)

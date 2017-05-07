@@ -2,6 +2,7 @@ package xyz.codeark.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.PullResult;
 import org.eclipse.jgit.api.Status;
@@ -11,6 +12,7 @@ import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
+import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.springframework.stereotype.Service;
 import xyz.codeark.dto.GitRepository;
 import xyz.codeark.rest.RestConstants;
@@ -25,6 +27,8 @@ import java.nio.file.Paths;
 @Service
 public class GitServiceImpl implements GitService {
 
+    private UsernamePasswordCredentialsProvider usernamePasswordCredentialsProvider;
+
     @Override
     public GitRepository pull(GitRepository gitRepository, Boolean userRebase) {
         log.info("Updating repository: {}", gitRepository.getName());
@@ -32,12 +36,10 @@ public class GitServiceImpl implements GitService {
         PullResult pullResult = null;
         try (Repository repository = getJGitRepository(gitRepository.getPath())) {
             if (CollectionUtils.isEmpty(repository.getRemoteNames())) {
-                log.error(RestConstants.GIT_REPOSITORY_NO_REMOTE_ORIGIN_FOUND_IN_THE_LOCAL_CONFIG);
-                throw new AspenRestException(
+                logAndThrow(gitRepository.getPath(),
+                        gitRepository.getName(),
                         RestConstants.GIT_REPOSITORY_NO_REMOTE_ORIGIN_FOUND_IN_THE_LOCAL_CONFIG,
-                        Response.Status.ACCEPTED,
-                        gitRepository.getPath(),
-                        gitRepository.getName());
+                        null);
             }
 
             try (Git git = new Git(repository)) {
@@ -48,8 +50,16 @@ public class GitServiceImpl implements GitService {
                     stash = createStash(git, gitRepository.getPath(), gitRepository.getName());
                 }
 
-                pullResult = git.pull().setRebase(userRebase).call();
-
+                if (gitRepository.getName().equals("makwithpassX")) {
+                    pullResult = git.pull()
+                            .setRebase(userRebase)
+                            .setCredentialsProvider(usernamePasswordCredentialsProvider)
+                            .call();
+                } else {
+                    pullResult = git.pull()
+                            .setRebase(userRebase)
+                            .call();
+                }
                 //TODO: should stash be applied even when an exception happens
                 if (stash != null) {
                     log.info("Applying stash");
@@ -57,20 +67,16 @@ public class GitServiceImpl implements GitService {
                     log.info("Stash with ID {} was applied successfully", appliedStashId);
                 }
             } catch (GitAPIException e) {
-                log.error(RestConstants.GIT_ERROR_WHILE_UPDATING_REPOSITORY, e);
-                throw new AspenRestException(
+                logAndThrow(gitRepository.getPath(),
+                        gitRepository.getName(),
                         RestConstants.GIT_ERROR_WHILE_UPDATING_REPOSITORY,
-                        Response.Status.ACCEPTED,
-                        gitRepository.getPath(),
-                        gitRepository.getName());
+                        e);
             }
         } catch (IOException e) {
-            log.error(RestConstants.ERROR_BUILDING_GIT_INSTANCE, e);
-            throw new AspenRestException(
+            logAndThrow(gitRepository.getPath(),
+                    gitRepository.getName(),
                     RestConstants.ERROR_BUILDING_GIT_INSTANCE,
-                    Response.Status.ACCEPTED,
-                    gitRepository.getPath(),
-                    gitRepository.getName());
+                    e);
         }
 
         // should both the rebase and fetch results be treated?
@@ -92,12 +98,10 @@ public class GitServiceImpl implements GitService {
         try {
             revCommit = git.stashCreate().call();
         } catch (GitAPIException e) {
-            log.error("Error while stashing the changes of {}", git.getRepository());
-            throw new AspenRestException(
+            logAndThrow(path,
+                    name,
                     RestConstants.ERROR_WHILE_STASHING_CHANGES,
-                    Response.Status.ACCEPTED,
-                    path,
-                    name);
+                    e);
         }
 
         log.info("Uncommitted changes were successfully stashed");
@@ -106,8 +110,13 @@ public class GitServiceImpl implements GitService {
     }
 
     @Override
-    public GitRepository checkRepositoryStatus(String repositoryPath) {
+    public GitRepository checkRepositoryStatus(String repositoryPath, String username, String password) {
         log.info("Checking if repository \'{}\' is up to date", repositoryPath);
+
+        if (StringUtils.isNotEmpty(username) && StringUtils.isNotEmpty(password)) {
+            // initialize the UsernamePasswordCredentialsProvider
+            setUsernamePasswordCredentialsProvider(username, password);
+        }
 
         String repositoryName = repositoryPath.substring(repositoryPath.lastIndexOf('/') + 1);
         GitRepository gitRepository = new GitRepository();
@@ -116,12 +125,10 @@ public class GitServiceImpl implements GitService {
 
         try (Repository repository = getJGitRepository(repositoryPath)) {
             if (CollectionUtils.isEmpty(repository.getRemoteNames())) {
-                log.debug(String.format(RestConstants.GIT_REPOSITORY_NO_REMOTE_ORIGIN_FOUND_IN_THE_LOCAL_CONFIG + " Repository name: %s", repositoryName));
-                throw new AspenRestException(
+                logAndThrow(repositoryPath,
+                        repositoryName,
                         RestConstants.GIT_REPOSITORY_NO_REMOTE_ORIGIN_FOUND_IN_THE_LOCAL_CONFIG,
-                        Response.Status.ACCEPTED,
-                        repositoryPath,
-                        repositoryName);
+                        null);
             }
             fetchBranches(repository, repositoryPath, repositoryName);
 
@@ -152,12 +159,10 @@ public class GitServiceImpl implements GitService {
             }
 
         } catch (IOException e) {
-            log.error("Error while building a git instance", e);
-            throw new AspenRestException(
+            logAndThrow(repositoryPath,
+                    repositoryName,
                     RestConstants.ERROR_BUILDING_GIT_INSTANCE,
-                    Response.Status.ACCEPTED,
-                    repositoryPath,
-                    repositoryName);
+                    e);
         }
 
         log.debug(RestConstants.GIT_REPOSITORY_IS_UP_TO_DATE + ": " + repositoryName);
@@ -169,29 +174,46 @@ public class GitServiceImpl implements GitService {
     private void fetchBranches(Repository repository, String repositoryPath, String repositoryName) {
         log.info(String.format("Fetching branches for repository: %s", repositoryName));
         try (Git git = new Git(repository)) {
-            git.fetch().call();
+                git.fetch()
+                        .setCredentialsProvider(usernamePasswordCredentialsProvider)
+                        .call();
         } catch (InvalidRemoteException e) {
-            log.error(RestConstants.ERROR_FETCHING_INVALID_REMOTE + " Repository name: " + repositoryName, e);
-            throw new AspenRestException(
+            logAndThrow(repositoryPath,
+                    repositoryName,
                     RestConstants.ERROR_FETCHING_INVALID_REMOTE,
-                    Response.Status.ACCEPTED,
-                    repositoryPath,
-                    repositoryName);
+                    e);
         } catch (TransportException e) {
-            log.error(RestConstants.ERROR_FETCHING_TRANSPORT_FAILED + " Repository name: " + repositoryName, e);
-            throw new AspenRestException(
+            if (e.getCause().getMessage().contains("Authentication is required but no CredentialsProvider has been registered")) {
+                logAndThrow(repositoryPath,
+                        repositoryName,
+                        RestConstants.ERROR_CONNECTING_TO_REMOTE_REPOSITOY_AUTHENTICATION_IS_REQUIRED,
+                        e);
+            }
+
+            logAndThrow(repositoryPath,
+                    repositoryName,
                     RestConstants.ERROR_FETCHING_TRANSPORT_FAILED,
-                    Response.Status.ACCEPTED,
-                    repositoryPath,
-                    repositoryName);
+                    e);
         } catch (GitAPIException e) {
-            log.error(RestConstants.ERROR_FETCHING_GITAPI_EXCEPTION + " Repository name: " + repositoryName, e);
-            throw new AspenRestException(
+            logAndThrow(repositoryPath,
+                    repositoryName,
                     RestConstants.ERROR_FETCHING_GITAPI_EXCEPTION,
-                    Response.Status.ACCEPTED,
-                    repositoryPath,
-                    repositoryName);
+                    e);
         }
+    }
+
+    private void logAndThrow(String repositoryPath, String repositoryName, String errorMessage, Exception e) {
+        if (e != null) {
+            log.error(errorMessage + " Repository name: " + repositoryName, e);
+        } else {
+            log.error(errorMessage + " Repository name: " + repositoryName);
+        }
+
+        throw new AspenRestException(
+                errorMessage,
+                Response.Status.ACCEPTED,
+                repositoryPath,
+                repositoryName);
     }
 
     private Repository getJGitRepository(String repositoryPath) throws IOException {
@@ -203,5 +225,9 @@ public class GitServiceImpl implements GitService {
                 .setGitDir(gitRepositoryConfigPath.toFile())
                 .readEnvironment() // scan environment GIT_* variables
                 .build();
+    }
+
+    private void setUsernamePasswordCredentialsProvider(String username, String password){
+        usernamePasswordCredentialsProvider = new UsernamePasswordCredentialsProvider(username, password);
     }
 }

@@ -32,7 +32,9 @@ public interface GitService {
      * Checks if the repository is up to date
      *
      * @param repositoryPath    the git repository path
+     * @param username          the user name used to access the repository
+     * @param password          the user password used to access the repository
      * @return the dto for the repository (name, path and status of the repository (is up to date, behind or ahead origin))
      */
-    GitRepository checkRepositoryStatus(String repositoryPath);
+    GitRepository checkRepositoryStatus(String repositoryPath, String username, String password);
 }

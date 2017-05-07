@@ -25,6 +25,7 @@ $(document).ready(function () {
     var ERROR_FETCHING_INVALID_REMOTE = "Error while fetching remote branches. Invalid remote.";
     var NO_MAVEN_MODULES_AND_NO_GIT_REPOSITORIES_FOUND = "No maven modules and no git repositories found";
     var ERROR_FETCHING_TRANSPORT_FAILED = "Error while fetching remote branches. Transport operation failed.";
+    var ERROR_CONNECTING_TO_REMOTE_REPOSITOY_AUTHENTICATION_IS_REQUIRED = "Error while connecting to remote repository. Authentication is required.";
     var ERROR_FETCHING_GITAPI_EXCEPTION = "Error while fetching remote branches. GIT API exception.";
     var GLYPH_SUCCESS = "glyph-success";
     var GLYPH_FAILURE = "glyph-failure";
@@ -227,6 +228,12 @@ $(document).ready(function () {
                         GIT_UNKNOWN_BUTTON_NAME,
                         TOOL_TIP_CLICK_TO_RE_CHECK,
                         "btn-warning") + createGlyphIcon(ERROR_FETCHING_GITAPI_EXCEPTION, GLYPH_FAILURE);
+            case ERROR_CONNECTING_TO_REMOTE_REPOSITOY_AUTHENTICATION_IS_REQUIRED:
+                return createGitButton(gitRepository.name,
+                        gitRepository.path,
+                        GIT_UNKNOWN_BUTTON_NAME,
+                        TOOL_TIP_CLICK_TO_RE_CHECK,
+                        "btn-warning") + createGlyphIcon(ERROR_CONNECTING_TO_REMOTE_REPOSITOY_AUTHENTICATION_IS_REQUIRED, GLYPH_FAILURE);
         }
     }
 
@@ -275,6 +282,10 @@ $(document).ready(function () {
                         var $gitRepositorySelector = $("#git-repository-img-" + result.name);
                         $gitRepositorySelector.before(getGitRepositoryStatus(result));
                         $gitRepositorySelector.remove();
+                        if (result.status === ERROR_CONNECTING_TO_REMOTE_REPOSITOY_AUTHENTICATION_IS_REQUIRED){
+                            // display a pop up asking for credentials
+                            // The following repository requires authentication. Please provide a username and password
+                        }
                     },
                     400: function (result) {
                         //TODO
