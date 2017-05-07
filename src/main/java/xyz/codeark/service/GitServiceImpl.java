@@ -6,7 +6,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.PullResult;
 import org.eclipse.jgit.api.Status;
-import org.eclipse.jgit.api.errors.*;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.api.errors.InvalidRemoteException;
+import org.eclipse.jgit.api.errors.TransportException;
 import org.eclipse.jgit.lib.BranchTrackingStatus;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Repository;
@@ -36,10 +38,7 @@ public class GitServiceImpl implements GitService {
         PullResult pullResult = null;
         try (Repository repository = getJGitRepository(gitRepository.getPath())) {
             if (CollectionUtils.isEmpty(repository.getRemoteNames())) {
-                logAndThrow(gitRepository.getPath(),
-                        gitRepository.getName(),
-                        RestConstants.GIT_REPOSITORY_NO_REMOTE_ORIGIN_FOUND_IN_THE_LOCAL_CONFIG,
-                        null);
+                logAndThrow(gitRepository.getPath(), gitRepository.getName(), RestConstants.GIT_REPOSITORY_NO_REMOTE_ORIGIN_FOUND_IN_THE_LOCAL_CONFIG, null);
             }
 
             try (Git git = new Git(repository)) {
@@ -50,16 +49,11 @@ public class GitServiceImpl implements GitService {
                     stash = createStash(git, gitRepository.getPath(), gitRepository.getName());
                 }
 
-                if (gitRepository.getName().equals("makwithpassX")) {
-                    pullResult = git.pull()
-                            .setRebase(userRebase)
-                            .setCredentialsProvider(usernamePasswordCredentialsProvider)
-                            .call();
-                } else {
-                    pullResult = git.pull()
-                            .setRebase(userRebase)
-                            .call();
-                }
+                pullResult = git.pull()
+                        .setRebase(userRebase)
+                        .setCredentialsProvider(usernamePasswordCredentialsProvider)
+                        .call();
+
                 //TODO: should stash be applied even when an exception happens
                 if (stash != null) {
                     log.info("Applying stash");
@@ -67,16 +61,10 @@ public class GitServiceImpl implements GitService {
                     log.info("Stash with ID {} was applied successfully", appliedStashId);
                 }
             } catch (GitAPIException e) {
-                logAndThrow(gitRepository.getPath(),
-                        gitRepository.getName(),
-                        RestConstants.GIT_ERROR_WHILE_UPDATING_REPOSITORY,
-                        e);
+                logAndThrow(gitRepository.getPath(), gitRepository.getName(), RestConstants.GIT_ERROR_WHILE_UPDATING_REPOSITORY, e);
             }
         } catch (IOException e) {
-            logAndThrow(gitRepository.getPath(),
-                    gitRepository.getName(),
-                    RestConstants.ERROR_BUILDING_GIT_INSTANCE,
-                    e);
+            logAndThrow(gitRepository.getPath(), gitRepository.getName(), RestConstants.ERROR_BUILDING_GIT_INSTANCE, e);
         }
 
         // should both the rebase and fetch results be treated?
@@ -98,10 +86,7 @@ public class GitServiceImpl implements GitService {
         try {
             revCommit = git.stashCreate().call();
         } catch (GitAPIException e) {
-            logAndThrow(path,
-                    name,
-                    RestConstants.ERROR_WHILE_STASHING_CHANGES,
-                    e);
+            logAndThrow(path, name, RestConstants.ERROR_WHILE_STASHING_CHANGES, e);
         }
 
         log.info("Uncommitted changes were successfully stashed");
@@ -125,10 +110,7 @@ public class GitServiceImpl implements GitService {
 
         try (Repository repository = getJGitRepository(repositoryPath)) {
             if (CollectionUtils.isEmpty(repository.getRemoteNames())) {
-                logAndThrow(repositoryPath,
-                        repositoryName,
-                        RestConstants.GIT_REPOSITORY_NO_REMOTE_ORIGIN_FOUND_IN_THE_LOCAL_CONFIG,
-                        null);
+                logAndThrow(repositoryPath, repositoryName, RestConstants.GIT_REPOSITORY_NO_REMOTE_ORIGIN_FOUND_IN_THE_LOCAL_CONFIG, null);
             }
             fetchBranches(repository, repositoryPath, repositoryName);
 
@@ -159,10 +141,7 @@ public class GitServiceImpl implements GitService {
             }
 
         } catch (IOException e) {
-            logAndThrow(repositoryPath,
-                    repositoryName,
-                    RestConstants.ERROR_BUILDING_GIT_INSTANCE,
-                    e);
+            logAndThrow(repositoryPath, repositoryName, RestConstants.ERROR_BUILDING_GIT_INSTANCE, e);
         }
 
         log.debug(RestConstants.GIT_REPOSITORY_IS_UP_TO_DATE + ": " + repositoryName);
@@ -178,27 +157,17 @@ public class GitServiceImpl implements GitService {
                         .setCredentialsProvider(usernamePasswordCredentialsProvider)
                         .call();
         } catch (InvalidRemoteException e) {
-            logAndThrow(repositoryPath,
-                    repositoryName,
-                    RestConstants.ERROR_FETCHING_INVALID_REMOTE,
-                    e);
+            logAndThrow(repositoryPath, repositoryName, RestConstants.ERROR_FETCHING_INVALID_REMOTE, e);
         } catch (TransportException e) {
             if (e.getCause().getMessage().contains("Authentication is required but no CredentialsProvider has been registered")) {
-                logAndThrow(repositoryPath,
-                        repositoryName,
+                logAndThrow(repositoryPath, repositoryName,
                         RestConstants.ERROR_CONNECTING_TO_REMOTE_REPOSITOY_AUTHENTICATION_IS_REQUIRED,
                         e);
             }
 
-            logAndThrow(repositoryPath,
-                    repositoryName,
-                    RestConstants.ERROR_FETCHING_TRANSPORT_FAILED,
-                    e);
+            logAndThrow(repositoryPath, repositoryName, RestConstants.ERROR_FETCHING_TRANSPORT_FAILED, e);
         } catch (GitAPIException e) {
-            logAndThrow(repositoryPath,
-                    repositoryName,
-                    RestConstants.ERROR_FETCHING_GITAPI_EXCEPTION,
-                    e);
+            logAndThrow(repositoryPath, repositoryName, RestConstants.ERROR_FETCHING_GITAPI_EXCEPTION, e);
         }
     }
 
@@ -209,11 +178,7 @@ public class GitServiceImpl implements GitService {
             log.error(errorMessage + " Repository name: " + repositoryName);
         }
 
-        throw new AspenRestException(
-                errorMessage,
-                Response.Status.ACCEPTED,
-                repositoryPath,
-                repositoryName);
+        throw new AspenRestException(errorMessage, Response.Status.ACCEPTED, repositoryPath, repositoryName);
     }
 
     private Repository getJGitRepository(String repositoryPath) throws IOException {

@@ -38,6 +38,30 @@
         <div class="col-sm-6" id="maven-modules">
         </div>
     </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="credential-provider-pop-up" role="dialog">
+        <div class="modal-dialog modal-md">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Repository credentials</h4>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <input type="text" class="form-control" name="username" id="credential-provider-pop-up-username" placeholder="username">
+                        <input type="password" class="form-control" name="password" id="credential-provider-pop-up-password" placeholder="password">
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" data-dismiss="modal" id="credential-provider-pop-up-ok-btn">Submit</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
 </div>
 
 <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->

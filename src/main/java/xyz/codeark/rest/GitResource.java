@@ -43,8 +43,8 @@ public class GitResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response checkIfRepositoryIsUpToDate(
             @QueryParam("repositoryPath") String repositoryPath,
-            @DefaultValue("") @QueryParam("password") String password,
-            @DefaultValue("") @QueryParam("username") String username) {
+            @DefaultValue("") @QueryParam("username") String username,
+            @DefaultValue("") @QueryParam("password") String password) {
 
         if ((StringUtils.isEmpty(repositoryPath)) || (Files.notExists(Paths.get(repositoryPath)))) {
             log.error("Invalid git repository path {}", repositoryPath);

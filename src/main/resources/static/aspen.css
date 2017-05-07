@@ -18,6 +18,11 @@
     width: 71px;
 }
 
+#credential-provider-pop-up-username, #credential-provider-pop-up-password {
+    width: 90%;
+    margin: 5px;
+}
+
 .git-button-grey-ajax-loader {
     content: url("./img/ajax-loader-grey.gif");
 }

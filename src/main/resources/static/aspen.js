@@ -263,38 +263,71 @@ $(document).ready(function () {
 
     function checkIfRepositoriesAreUpToDate(gitRepositories) {
         for (var i = 0; i < gitRepositories.length; i++) {
-            $("#git-repository-img-" + gitRepositories[i].name).attr("src", "./img/ajax-loader-red.gif");
-
-            $.ajax({
-                url: gitUrl,
-                type: "GET",
-                data: {
-                    repositoryPath: gitRepositories[i].path
-                },
-
-                statusCode: {
-                    200: function (result) {
-                        var $gitRepositorySelector = $("#git-repository-img-" + result.name);
-                        $gitRepositorySelector.before(getGitRepositoryStatus(result));
-                        $gitRepositorySelector.remove();
-                    },
-                    202: function (result) {
-                        var $gitRepositorySelector = $("#git-repository-img-" + result.name);
-                        $gitRepositorySelector.before(getGitRepositoryStatus(result));
-                        $gitRepositorySelector.remove();
-                        if (result.status === ERROR_CONNECTING_TO_REMOTE_REPOSITOY_AUTHENTICATION_IS_REQUIRED){
-                            // display a pop up asking for credentials
-                            // The following repository requires authentication. Please provide a username and password
-                        }
-                    },
-                    400: function (result) {
-                        //TODO
-
-                    }
-                }
-            });
+            checkIfRepositoryIsUpToDate(gitRepositories[i]);
         }
     }
+
+    function checkIfRepositoryIsUpToDate(gitRepository, username, password){
+        $("#git-repository-img-" + gitRepository.name).attr("src", "./img/ajax-loader-red.gif");
+
+        $.ajax({
+            url: gitUrl,
+            type: "GET",
+            data: {
+                repositoryPath: gitRepository.path,
+                username: username,
+                password: password
+            },
+
+            statusCode: {
+                200: function (result) {
+                    var $gitRepositorySelector = $("#git-repository-img-" + result.name);
+                    $gitRepositorySelector.before(getGitRepositoryStatus(result));
+                    $gitRepositorySelector.remove();
+                },
+                202: function (result) {
+                    if (result.status === ERROR_CONNECTING_TO_REMOTE_REPOSITOY_AUTHENTICATION_IS_REQUIRED){
+                        // display a pop up asking for credentials
+                        // The following repository requires authentication. Please provide a username and password
+                        var $credentialsPopUp = $('#credential-provider-pop-up');
+                        $('.modal-title').html("\"" + gitRepository.name + "\" repository credentials");
+                        $credentialsPopUp.modal('show');
+                        $credentialsPopUp.attr('gitRepositoryName', gitRepository.name);
+                        $credentialsPopUp.attr('gitRepositoryPath', gitRepository.path);
+                        $credentialsPopUp.attr('gitRepositoryStatus', gitRepository.status);
+                    } else {
+                        var $gitRepositorySelector = $("#git-repository-img-" + result.name);
+                        $gitRepositorySelector.before(getGitRepositoryStatus(result));
+                        $gitRepositorySelector.remove();
+                    }
+                },
+                400: function (result) {
+                    //TODO
+
+                }
+            }
+        });
+    }
+
+    $('#credential-provider-pop-up-ok-btn').on("click", function () {
+        var $credentialsPopUp = $('#credential-provider-pop-up');
+        var gitRepository = {name:$credentialsPopUp.attr('gitRepositoryName'),
+                            path:$credentialsPopUp.attr('gitRepositoryPath'),
+                            status:$credentialsPopUp.attr('gitRepositoryStatus')};
+
+        var username = $('#credential-provider-pop-up-username').val();
+        var password = $('#credential-provider-pop-up-password').val();
+
+        $credentialsPopUp.modal('hide');
+
+        checkIfRepositoryIsUpToDate(gitRepository, username, password);
+    });
+
+    $('#credential-provider-pop-up-password').keyup(function (event) {
+        if (event.keyCode === 13) {
+            $('#credential-provider-pop-up-ok-btn').click();
+        }
+    });
 
 
     /* ------------------- Maven related code ------------------- */
