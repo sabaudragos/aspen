@@ -24,12 +24,15 @@ import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 @Service
 public class GitServiceImpl implements GitService {
 
     private UsernamePasswordCredentialsProvider usernamePasswordCredentialsProvider;
+    private Map<String, Integer> numberOfRetries = new HashMap<>();
 
     @Override
     public GitRepository pull(GitRepository gitRepository, Boolean userRebase) {
@@ -159,12 +162,21 @@ public class GitServiceImpl implements GitService {
         } catch (InvalidRemoteException e) {
             logAndThrow(repositoryPath, repositoryName, RestConstants.ERROR_FETCHING_INVALID_REMOTE, e);
         } catch (TransportException e) {
-            if (e.getCause().getMessage().contains("Authentication is required but no CredentialsProvider has been registered")) {
-                logAndThrow(repositoryPath, repositoryName,
-                        RestConstants.ERROR_CONNECTING_TO_REMOTE_REPOSITOY_AUTHENTICATION_IS_REQUIRED,
-                        e);
-            }
+            if (numberOfRetries.get(repositoryName) == null || numberOfRetries.get(repositoryName) < 3 ) {
+                // no more then 3 retries per repo
+                numberOfRetries.put(repositoryName, numberOfRetries.get(repositoryName) == null ? 1 : numberOfRetries.get(repositoryName) + 1);
+                if (e.getCause().getMessage().contains("Authentication is required but no CredentialsProvider has been registered")) {
+                    logAndThrow(repositoryPath, repositoryName,
+                            RestConstants.ERROR_CONNECTING_TO_REMOTE_REPOSITOY_AUTHENTICATION_IS_REQUIRED,
+                            e);
+                }
 
+                if (e.getCause().getMessage().contains("not authorized")) {
+                    logAndThrow(repositoryPath, repositoryName,
+                            RestConstants.ERROR_CONNECTING_TO_REMOTE_REPOSITOY_AUTHENTICATION_IS_REQUIRED,
+                            e);
+                }
+            }
             logAndThrow(repositoryPath, repositoryName, RestConstants.ERROR_FETCHING_TRANSPORT_FAILED, e);
         } catch (GitAPIException e) {
             logAndThrow(repositoryPath, repositoryName, RestConstants.ERROR_FETCHING_GITAPI_EXCEPTION, e);
