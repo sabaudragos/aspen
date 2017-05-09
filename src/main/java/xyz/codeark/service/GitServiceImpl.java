@@ -55,6 +55,23 @@ public class GitServiceImpl implements GitService {
                         .setCredentialsProvider(usernamePasswordCredentialsProvider)
                         .call();
 
+                if (pullResult.getRebaseResult().getStatus().isSuccessful()) {
+                    BranchTrackingStatus branchTrackingStatus =
+                            BranchTrackingStatus.of(repository, repository.getFullBranch());
+
+                    if ((branchTrackingStatus != null) && (branchTrackingStatus.getAheadCount() > 0)){
+                            // local branch NOT outdated, is ahead origin by branchTrackingStatus.getAheadCount()
+                            gitRepository.setStatus(RestConstants.GIT_REPOSITORY_IS_AHEAD_OF_ORIGIN);
+                            log.debug(RestConstants.GIT_REPOSITORY_IS_AHEAD_OF_ORIGIN + ": " + gitRepository.getName());
+
+                            return gitRepository;
+                    }
+
+                    gitRepository.setStatus(RestConstants.GIT_PULL_SUCCESS);
+
+                    return gitRepository;
+                }
+
                 //TODO: should stash be applied even when an exception happens
                 if (stash != null) {
                     log.info("Applying stash");
@@ -69,13 +86,9 @@ public class GitServiceImpl implements GitService {
         }
 
         // should both the rebase and fetch results be treated?
-//        pullResult.getRebaseResult().getStatus().equals(RebaseResult.Status.UP_TO_DATE);
+        // pullResult.getRebaseResult().getStatus().equals(RebaseResult.Status.UP_TO_DATE);
 
-        if (pullResult.getRebaseResult().getStatus().isSuccessful()) {
-            gitRepository.setStatus(RestConstants.GIT_PULL_SUCCESS);
-        } else {
-            gitRepository.setStatus(RestConstants.GIT_PULL_FAILED);
-        }
+        gitRepository.setStatus(RestConstants.GIT_PULL_FAILED);
 
         return gitRepository;
     }
