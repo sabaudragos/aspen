@@ -266,13 +266,13 @@ $(document).ready(function () {
     }
 
     function getDefaultLoadingAnimation(gitRepository) {
-        return "&nbsp;&nbsp;<img src=\"./img/ajax-loader-red.gif\"" +
+        return "<span>&nbsp;&nbsp;<img src=\"./img/ajax-loader-red.gif\"" +
             "id=\"git-repository-img-" + gitRepository.name + "\" " +
             "name=\"" + gitRepository.name + "\" " +
             "path=\"" + gitRepository.path + "\" " +
             "data-toggle=\"tooltip\" " +
             "data-placement=\"right\" " +
-            "title=\"Pending status check!\">";
+            "title=\"Pending status check!\"></span>";
     }
 
     function checkIfRepositoriesAreUpToDate(gitRepositories) {
@@ -373,11 +373,11 @@ $(document).ready(function () {
 
             statusCode: {
                 200: function (response) {
-                    removeLoaderAfterTheButton($mvnButton);
+                    removeMessageAfterTheButton($mvnButton);
                     displayMvnBuildStatus(response);
                 },
                 202: function (response) {
-                    removeLoaderAfterTheButton($mvnButton);
+                    removeMessageAfterTheButton($mvnButton);
                     var responseMessage = response.responseText;
                     if ((responseMessage === MAVEN_PATH_NOT_FOUND_IN_PATH_VARIABLE) ||
                         (responseMessage === UNSUPPORTED_OPERATING_SYSTEM)) {
@@ -390,7 +390,7 @@ $(document).ready(function () {
                     }
                 },
                 400: function (response) {
-                    removeLoaderAfterTheButton($mvnButton);
+                    removeMessageAfterTheButton($mvnButton);
                     //TODO needs refactoring
                     removeExistingMessage();
                     displayErrorMessage(response.responseText + ". Module name: " + $mvnButton.parent().prev().text());
@@ -435,16 +435,16 @@ $(document).ready(function () {
 
             statusCode: {
                 200: function (response) {
-                    removeLoaderAfterTheButton($gitButton);
+                    removeMessageAfterTheButton($gitButton);
                     displayGitPullStatus(response);
                 },
                 202: function (response) {
-                    removeLoaderAfterTheButton($gitButton);
+                    removeMessageAfterTheButton($gitButton);
                     displayGitPullAspenRestException(response, $gitButton);
                 },
                 400: function (response) {
                     //TODO needs refactoring
-                    removeLoaderAfterTheButton($gitButton);
+                    removeMessageAfterTheButton($gitButton);
                     removeExistingMessage();
                     displayErrorMessage(response.responseText + ". Module name: " + $gitButton.parent().prev().text());
                 }
@@ -491,12 +491,6 @@ $(document).ready(function () {
     function removeMessageAfterTheButton($button) {
         if ($button.next('span').length > 0) {
             $button.next('span').remove();
-        }
-    }
-
-    function removeLoaderAfterTheButton($button) {
-        if ($button.next('img').length > 0) {
-            $button.next('img').remove();
         }
     }
 
