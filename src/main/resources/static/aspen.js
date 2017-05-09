@@ -32,6 +32,7 @@ $(document).ready(function () {
     var TOOL_TIP_CLICK_TO_RE_CHECK = "Click to re-check!";
     var GIT_UNKNOWN_BUTTON_NAME = "Unknown";
     var GIT_UP_TO_DATE_BUTTON_NAME = "Up to date";
+    var GIT_OUT_OF_DATE_BUTTON_NAME = "Out of date";
 
     // initialize all tooltips -- NOT WORKING
     $("[data-toggle=tooltip]").tooltip();
@@ -234,6 +235,18 @@ $(document).ready(function () {
                         GIT_UNKNOWN_BUTTON_NAME,
                         TOOL_TIP_CLICK_TO_RE_CHECK,
                         "btn-warning") + createGlyphIcon(ERROR_CONNECTING_TO_REMOTE_REPOSITOY_AUTHENTICATION_IS_REQUIRED, GLYPH_FAILURE);
+            case GIT_PULL_SUCCESS:
+                return createGitButton(gitRepository.name,
+                        gitRepository.path,
+                        GIT_UP_TO_DATE_BUTTON_NAME,
+                        TOOL_TIP_CLICK_TO_RE_CHECK,
+                        "btn-success") + createGlyphIcon(GIT_PULL_SUCCESS, GLYPH_SUCCESS);
+            case GIT_PULL_FAILED:
+                return createGitButton(gitRepository.name,
+                        gitRepository.path,
+                        GIT_UNKNOWN_BUTTON_NAME,
+                        TOOL_TIP_CLICK_TO_RE_CHECK,
+                        "btn-danger") + createGlyphIcon(GIT_PULL_FAILED, GLYPH_FAILURE);
         }
     }
 
@@ -267,7 +280,7 @@ $(document).ready(function () {
         }
     }
 
-    function checkIfRepositoryIsUpToDate(gitRepository, username, password){
+    function checkIfRepositoryIsUpToDate(gitRepository, username, password) {
         $("#git-repository-img-" + gitRepository.name).attr("src", "./img/ajax-loader-red.gif");
 
         $.ajax({
@@ -286,7 +299,7 @@ $(document).ready(function () {
                     $gitRepositorySelector.remove();
                 },
                 202: function (result) {
-                    if (result.status === ERROR_CONNECTING_TO_REMOTE_REPOSITOY_AUTHENTICATION_IS_REQUIRED){
+                    if (result.status === ERROR_CONNECTING_TO_REMOTE_REPOSITOY_AUTHENTICATION_IS_REQUIRED) {
                         // display a pop up asking for credentials
                         // The following repository requires authentication. Please provide a username and password
                         var $credentialsPopUp = $('#credential-provider-pop-up');
@@ -311,9 +324,11 @@ $(document).ready(function () {
 
     $('#credential-provider-pop-up-ok-btn').on("click", function () {
         var $credentialsPopUp = $('#credential-provider-pop-up');
-        var gitRepository = {name:$credentialsPopUp.attr('gitRepositoryName'),
-                            path:$credentialsPopUp.attr('gitRepositoryPath'),
-                            status:$credentialsPopUp.attr('gitRepositoryStatus')};
+        var gitRepository = {
+            name: $credentialsPopUp.attr('gitRepositoryName'),
+            path: $credentialsPopUp.attr('gitRepositoryPath'),
+            status: $credentialsPopUp.attr('gitRepositoryStatus')
+        };
 
         var username = $('#credential-provider-pop-up-username').val();
         var password = $('#credential-provider-pop-up-password').val();
@@ -428,14 +443,10 @@ $(document).ready(function () {
 
 
     function displayGitPullStatus(response) {
-        var pullStatus = response.status;
         var $gitRepositorySelector = $("#git-repository-" + response.name);
 
-        if (pullStatus === GIT_PULL_SUCCESS) {
-            $gitRepositorySelector.after(createGlyphIcon(GIT_PULL_SUCCESS, GLYPH_SUCCESS));
-        } else if (pullStatus === GIT_PULL_FAILED) {
-            $gitRepositorySelector.after(createGlyphIcon(GIT_PULL_FAILED, GLYPH_FAILURE));
-        }
+        $gitRepositorySelector.before(getGitRepositoryStatus(response));
+        $gitRepositorySelector.remove();
     }
 
 
