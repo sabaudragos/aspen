@@ -104,7 +104,7 @@ $(document).ready(function () {
                     "<td>" + (i + 1) + "</td>" +
                     "<td>" + gitRepositories[i].name + "</td>" +
                     "<td>" +
-                    getDefaultGitRepositoryStatus(gitRepositories[i]) +
+                    getDefaultLoadingAnimation(gitRepositories[i]) +
                     "</td>" +
                     "</tr>"
                 );
@@ -190,7 +190,7 @@ $(document).ready(function () {
             case GIT_REPOSITORY_IS_BEHIND_ORIGIN:
                 return createGitButton(gitRepository.name,
                         gitRepository.path,
-                        "Out of date",
+                        GIT_OUT_OF_DATE_BUTTON_NAME,
                         "Click to update!",
                         "btn-danger") + createGlyphIcon(GIT_REPOSITORY_IS_BEHIND_ORIGIN, GLYPH_FAILURE);
             case GIT_NO_REMOTE_TRACKING_OF_BRANCH:
@@ -264,8 +264,8 @@ $(document).ready(function () {
             "</button>";
     }
 
-    function getDefaultGitRepositoryStatus(gitRepository) {
-        return "<img src=\"./img/ajax-loader-grey.gif\"" +
+    function getDefaultLoadingAnimation(gitRepository) {
+        return "&nbsp;&nbsp;<img src=\"./img/ajax-loader-red.gif\"" +
             "id=\"git-repository-img-" + gitRepository.name + "\" " +
             "name=\"" + gitRepository.name + "\" " +
             "path=\"" + gitRepository.path + "\" " +
@@ -355,22 +355,28 @@ $(document).ready(function () {
             $mvnButton.next('span').remove();
         }
 
+        var mavenModule = {
+            "path": $mvnButton.attr("path"),
+            "name": $mvnButton.attr("name"),
+            "status": ""
+        };
+
+        $mvnButton.after(getDefaultLoadingAnimation(mavenModule))
+
         $.ajax({
             url: mvnUrl,
             type: "POST",
             contentType: "application/json",
             dataType: "json",
-            data: JSON.stringify({
-                "path": $mvnButton.attr("path"),
-                "name": $mvnButton.attr("name"),
-                "status": ""
-            }),
+            data: JSON.stringify(mavenModule),
 
             statusCode: {
                 200: function (response) {
+                    removeLoaderAfterTheButton($mvnButton);
                     displayMvnBuildStatus(response);
                 },
                 202: function (response) {
+                    removeLoaderAfterTheButton($mvnButton);
                     var responseMessage = response.responseText;
                     if ((responseMessage === MAVEN_PATH_NOT_FOUND_IN_PATH_VARIABLE) ||
                         (responseMessage === UNSUPPORTED_OPERATING_SYSTEM)) {
@@ -383,6 +389,7 @@ $(document).ready(function () {
                     }
                 },
                 400: function (response) {
+                    removeLoaderAfterTheButton($mvnButton);
                     //TODO needs refactoring
                     removeExistingMessage();
                     displayErrorMessage(response.responseText + ". Module name: " + $mvnButton.parent().prev().text());
@@ -411,27 +418,32 @@ $(document).ready(function () {
 
         $gitButton.button('loading');
         removeMessageAfterTheButton($gitButton);
+        var gitRepository = {
+            "path": $gitButton.attr("path"),
+            "name": $gitButton.attr("name"),
+            "status": ""
+        };
+        $gitButton.after(getDefaultLoadingAnimation(gitRepository));
 
         $.ajax({
             url: gitUrl,
             type: "POST",
             contentType: "application/json",
             dataType: "json",
-            data: JSON.stringify({
-                "path": $gitButton.attr("path"),
-                "name": $gitButton.attr("name"),
-                "status": ""
-            }),
+            data: JSON.stringify(gitRepository),
 
             statusCode: {
                 200: function (response) {
+                    removeLoaderAfterTheButton($gitButton);
                     displayGitPullStatus(response);
                 },
                 202: function (response) {
+                    removeLoaderAfterTheButton($gitButton);
                     displayGitPullAspenRestException(response, $gitButton);
                 },
                 400: function (response) {
                     //TODO needs refactoring
+                    removeLoaderAfterTheButton($gitButton);
                     removeExistingMessage();
                     displayErrorMessage(response.responseText + ". Module name: " + $gitButton.parent().prev().text());
                 }
@@ -478,6 +490,12 @@ $(document).ready(function () {
     function removeMessageAfterTheButton($button) {
         if ($button.next('span').length > 0) {
             $button.next('span').remove();
+        }
+    }
+
+    function removeLoaderAfterTheButton($button) {
+        if ($button.next('img').length > 0) {
+            $button.next('img').remove();
         }
     }
 
