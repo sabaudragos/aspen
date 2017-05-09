@@ -19,6 +19,7 @@ $(document).ready(function () {
     var ERROR_BUILDING_GIT_INSTANCE = "Error while building a Git instance";
     var GIT_REPOSITORY_IS_UP_TO_DATE = "Git repository is up to date with origin";
     var GIT_REPOSITORY_IS_AHEAD_OF_ORIGIN = "Git repository is ahead origin";
+    var GIT_REPOSITORY_IS_AHEAD_OF_ORIGIN_BUTTON_NAME = "'Ahead of origin'";
     var GIT_REPOSITORY_IS_BEHIND_ORIGIN = "Git repository is behind origin";
     var ERROR_WHILE_STASHING_CHANGES = "Error while stashing the changes";
     var ERROR_WHILE_CHECKING_BRANCH_STATUS = "Error while checking the status";
@@ -177,9 +178,9 @@ $(document).ready(function () {
             case GIT_REPOSITORY_IS_AHEAD_OF_ORIGIN:
                 return createGitButton(gitRepository.name,
                         gitRepository.path,
-                        GIT_UP_TO_DATE_BUTTON_NAME,
+                        GIT_REPOSITORY_IS_AHEAD_OF_ORIGIN_BUTTON_NAME,
                         TOOL_TIP_CLICK_TO_RE_CHECK,
-                        "btn-success"
+                        "btn-info"
                     ) + createGlyphIcon(GIT_REPOSITORY_IS_AHEAD_OF_ORIGIN, GLYPH_SUCCESS);
             case GIT_REPOSITORY_IS_UP_TO_DATE:
                 return createGitButton(gitRepository.name,
