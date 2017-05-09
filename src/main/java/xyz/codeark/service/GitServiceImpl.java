@@ -21,6 +21,7 @@ import xyz.codeark.rest.RestConstants;
 import xyz.codeark.rest.exceptions.AspenRestException;
 
 import javax.ws.rs.core.Response;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -103,7 +104,7 @@ public class GitServiceImpl implements GitService {
             setUsernamePasswordCredentialsProvider(username, password);
         }
 
-        String repositoryName = repositoryPath.substring(repositoryPath.lastIndexOf('/') + 1);
+        String repositoryName =  new File(repositoryPath).getName();
         GitRepository gitRepository = new GitRepository();
         gitRepository.setPath(repositoryPath);
         gitRepository.setName(repositoryName);
