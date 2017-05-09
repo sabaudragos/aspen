@@ -34,6 +34,11 @@ $(document).ready(function () {
     var GIT_UNKNOWN_BUTTON_NAME = "Unknown";
     var GIT_UP_TO_DATE_BUTTON_NAME = "Up to date";
     var GIT_OUT_OF_DATE_BUTTON_NAME = "Out of date";
+    var BTN_WARNING ='btn-warning';
+    var BTN_SUCCESS ='btn-success';
+    var BTN_INFO ='btn-info';
+    var BTN_DANGER ='btn-danger';
+    var BTN_DEFAULT ='btn-default';
 
     // initialize all tooltips -- NOT WORKING
     $("[data-toggle=tooltip]").tooltip();
@@ -180,74 +185,73 @@ $(document).ready(function () {
                         gitRepository.path,
                         GIT_REPOSITORY_IS_AHEAD_OF_ORIGIN_BUTTON_NAME,
                         TOOL_TIP_CLICK_TO_RE_CHECK,
-                        "btn-info"
-                    ) + createGlyphIcon(GIT_REPOSITORY_IS_AHEAD_OF_ORIGIN, GLYPH_SUCCESS);
+                        BTN_INFO) + createGlyphIcon(GIT_REPOSITORY_IS_AHEAD_OF_ORIGIN, GLYPH_SUCCESS);
             case GIT_REPOSITORY_IS_UP_TO_DATE:
                 return createGitButton(gitRepository.name,
                         gitRepository.path,
                         GIT_UP_TO_DATE_BUTTON_NAME,
                         TOOL_TIP_CLICK_TO_RE_CHECK,
-                        "btn-success") + createGlyphIcon(GIT_REPOSITORY_IS_UP_TO_DATE, GLYPH_SUCCESS);
+                        BTN_SUCCESS) + createGlyphIcon(GIT_REPOSITORY_IS_UP_TO_DATE, GLYPH_SUCCESS);
             case GIT_REPOSITORY_IS_BEHIND_ORIGIN:
                 return createGitButton(gitRepository.name,
                         gitRepository.path,
                         GIT_OUT_OF_DATE_BUTTON_NAME,
                         "Click to update!",
-                        "btn-danger") + createGlyphIcon(GIT_REPOSITORY_IS_BEHIND_ORIGIN, GLYPH_FAILURE);
+                        BTN_DANGER) + createGlyphIcon(GIT_REPOSITORY_IS_BEHIND_ORIGIN, GLYPH_FAILURE);
             case GIT_NO_REMOTE_TRACKING_OF_BRANCH:
                 return createGitButton(gitRepository.name,
                         gitRepository.path,
                         GIT_UNKNOWN_BUTTON_NAME,
                         TOOL_TIP_CLICK_TO_RE_CHECK,
-                        "btn-warning") + createGlyphIcon(GIT_NO_REMOTE_TRACKING_OF_BRANCH, GLYPH_FAILURE);
+                        BTN_DEFAULT) + createGlyphIcon(GIT_NO_REMOTE_TRACKING_OF_BRANCH, GLYPH_FAILURE);
             case GIT_REPOSITORY_NO_REMOTE_ORIGIN_FOUND_IN_THE_LOCAL_CONFIG:
                 return createGitButton(gitRepository.name,
                         gitRepository.path,
                         GIT_UNKNOWN_BUTTON_NAME,
                         TOOL_TIP_CLICK_TO_RE_CHECK,
-                        "btn-warning") + createGlyphIcon(GIT_REPOSITORY_NO_REMOTE_ORIGIN_FOUND_IN_THE_LOCAL_CONFIG, GLYPH_FAILURE);
+                        BTN_DEFAULT) + createGlyphIcon(GIT_REPOSITORY_NO_REMOTE_ORIGIN_FOUND_IN_THE_LOCAL_CONFIG, GLYPH_FAILURE);
             case ERROR_WHILE_STASHING_CHANGES:
                 return createGitButton(gitRepository.name,
                         gitRepository.path,
                         GIT_UNKNOWN_BUTTON_NAME,
                         TOOL_TIP_CLICK_TO_RE_CHECK,
-                        "btn-warning") + createGlyphIcon(ERROR_WHILE_STASHING_CHANGES, GLYPH_FAILURE);
+                        BTN_DEFAULT) + createGlyphIcon(ERROR_WHILE_STASHING_CHANGES, GLYPH_FAILURE);
             case ERROR_FETCHING_INVALID_REMOTE:
                 return createGitButton(gitRepository.name,
                         gitRepository.path,
                         GIT_UNKNOWN_BUTTON_NAME,
                         TOOL_TIP_CLICK_TO_RE_CHECK,
-                        "btn-warning") + createGlyphIcon(ERROR_FETCHING_INVALID_REMOTE, GLYPH_FAILURE);
+                        BTN_DEFAULT) + createGlyphIcon(ERROR_FETCHING_INVALID_REMOTE, GLYPH_FAILURE);
             case ERROR_FETCHING_TRANSPORT_FAILED:
                 return createGitButton(gitRepository.name,
                         gitRepository.path,
                         GIT_UNKNOWN_BUTTON_NAME,
                         TOOL_TIP_CLICK_TO_RE_CHECK,
-                        "btn-warning") + createGlyphIcon(ERROR_FETCHING_TRANSPORT_FAILED, GLYPH_FAILURE);
+                        BTN_DEFAULT) + createGlyphIcon(ERROR_FETCHING_TRANSPORT_FAILED, GLYPH_FAILURE);
             case ERROR_FETCHING_GITAPI_EXCEPTION:
                 return createGitButton(gitRepository.name,
                         gitRepository.path,
                         GIT_UNKNOWN_BUTTON_NAME,
                         TOOL_TIP_CLICK_TO_RE_CHECK,
-                        "btn-warning") + createGlyphIcon(ERROR_FETCHING_GITAPI_EXCEPTION, GLYPH_FAILURE);
+                        BTN_DEFAULT) + createGlyphIcon(ERROR_FETCHING_GITAPI_EXCEPTION, GLYPH_FAILURE);
             case ERROR_CONNECTING_TO_REMOTE_REPOSITOY_AUTHENTICATION_IS_REQUIRED:
                 return createGitButton(gitRepository.name,
                         gitRepository.path,
                         GIT_UNKNOWN_BUTTON_NAME,
                         TOOL_TIP_CLICK_TO_RE_CHECK,
-                        "btn-warning") + createGlyphIcon(ERROR_CONNECTING_TO_REMOTE_REPOSITOY_AUTHENTICATION_IS_REQUIRED, GLYPH_FAILURE);
+                        BTN_DEFAULT) + createGlyphIcon(ERROR_CONNECTING_TO_REMOTE_REPOSITOY_AUTHENTICATION_IS_REQUIRED, GLYPH_FAILURE);
             case GIT_PULL_SUCCESS:
                 return createGitButton(gitRepository.name,
                         gitRepository.path,
                         GIT_UP_TO_DATE_BUTTON_NAME,
                         TOOL_TIP_CLICK_TO_RE_CHECK,
-                        "btn-success") + createGlyphIcon(GIT_PULL_SUCCESS, GLYPH_SUCCESS);
+                        BTN_SUCCESS) + createGlyphIcon(GIT_PULL_SUCCESS, GLYPH_SUCCESS);
             case GIT_PULL_FAILED:
                 return createGitButton(gitRepository.name,
                         gitRepository.path,
                         GIT_UNKNOWN_BUTTON_NAME,
                         TOOL_TIP_CLICK_TO_RE_CHECK,
-                        "btn-danger") + createGlyphIcon(GIT_PULL_FAILED, GLYPH_FAILURE);
+                        BTN_DANGER) + createGlyphIcon(GIT_PULL_FAILED, GLYPH_FAILURE);
         }
     }
 
