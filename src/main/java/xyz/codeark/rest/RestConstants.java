@@ -42,9 +42,12 @@ public class RestConstants {
     public static final String GIT_ERROR_WHILE_UPDATING_REPOSITORY = "Error while updating the repository";
     public static final String ERROR_BUILDING_GIT_INSTANCE = "Error while building a Git instance";
     public static final String ERROR_FETCHING_INVALID_REMOTE = "Error while fetching remote branches. Invalid remote.";
-    public static final String ERROR_FETCHING_TRANSPORT_FAILED = "Error while fetching remote branches. Transport operation failed.";
+    public static final String ERROR_FETCHING_TRANSPORT_FAILED = "Error while fetching remote branches. Transport operation failed, likely due to an authentication issue.";
     public static final String ERROR_CONNECTING_TO_REMOTE_REPOSITOY_AUTHENTICATION_IS_REQUIRED = "Error while connecting to remote repository. Authentication is required.";
+    public static final String ERROR_CONNECTING_TO_REMOTE_REPOSITOY_AUTH_FAIL = "Auth fail.";
     public static final String ERROR_FETCHING_GITAPI_EXCEPTION = "Error while fetching remote branches. GIT API exception.";
     public static final String ERROR_WHILE_STASHING_CHANGES = "Error while stashing the changes";
     public static final String ERROR_WHILE_CHECKING_BRANCH_STATUS = "Error while checking the status";
+    public static final String ERROR_WHILE_GETTING_THE_TRANSPORT_PROTOCOL = "Error while getting the transport protocol";
+    public static final String NO_SUPPORTED_TRANSPORT_PROTOCOL_FOUND = "No supported transport protocol found";
 }

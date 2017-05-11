@@ -25,8 +25,9 @@ $(document).ready(function () {
     var ERROR_WHILE_CHECKING_BRANCH_STATUS = "Error while checking the status";
     var ERROR_FETCHING_INVALID_REMOTE = "Error while fetching remote branches. Invalid remote.";
     var NO_MAVEN_MODULES_AND_NO_GIT_REPOSITORIES_FOUND = "No maven modules and no git repositories found";
-    var ERROR_FETCHING_TRANSPORT_FAILED = "Error while fetching remote branches. Transport operation failed.";
+    var ERROR_FETCHING_TRANSPORT_FAILED = "Error while fetching remote branches. Transport operation failed, likely due to an authentication issue.";
     var ERROR_CONNECTING_TO_REMOTE_REPOSITOY_AUTHENTICATION_IS_REQUIRED = "Error while connecting to remote repository. Authentication is required.";
+    var ERROR_CONNECTING_TO_REMOTE_REPOSITOY_AUTH_FAIL = "Auth fail.";
     var ERROR_FETCHING_GITAPI_EXCEPTION = "Error while fetching remote branches. GIT API exception.";
     var GLYPH_SUCCESS = "glyph-success";
     var GLYPH_FAILURE = "glyph-failure";
@@ -305,7 +306,7 @@ $(document).ready(function () {
                 },
                 202: function (result) {
                     if (result.status === ERROR_CONNECTING_TO_REMOTE_REPOSITOY_AUTHENTICATION_IS_REQUIRED) {
-                        // display a pop up asking for credentials
+                        // display a pop up asking for credentials (username and password)
                         // The following repository requires authentication. Please provide a username and password
                         var $credentialsPopUp = $('#credential-provider-pop-up');
                         $('.modal-title').html("\"" + gitRepository.name + "\" repository credentials");
@@ -313,6 +314,15 @@ $(document).ready(function () {
                         $credentialsPopUp.attr('gitRepositoryName', gitRepository.name);
                         $credentialsPopUp.attr('gitRepositoryPath', gitRepository.path);
                         $credentialsPopUp.attr('gitRepositoryStatus', gitRepository.status);
+                    } else if (result.status === ERROR_CONNECTING_TO_REMOTE_REPOSITOY_AUTH_FAIL) {
+                        // display a pop up asking for credentials (ssh passphrase)
+                        // The following repository requires authentication. Please provide a username and password
+                        var $sshPassphrasePopUp = $('#ssh-passphrase-pop-up');
+                        $('.modal-title').html("\"" + gitRepository.name + "\" requires the ssh passphrase");
+                        $sshPassphrasePopUp.modal('show');
+                        $sshPassphrasePopUp.attr('gitRepositoryName', gitRepository.name);
+                        $sshPassphrasePopUp.attr('gitRepositoryPath', gitRepository.path);
+                        $sshPassphrasePopUp.attr('gitRepositoryStatus', gitRepository.status);
                     } else {
                         var $gitRepositorySelector = $("#git-repository-img-" + result.name);
                         $gitRepositorySelector.before(getGitRepositoryStatus(result));
@@ -326,6 +336,21 @@ $(document).ready(function () {
             }
         });
     }
+
+    $('#ssh-passphrase-pop-up-ok-btn').on("click", function () {
+        var $sshPassphrasePopUp = $('#ssh-passphrase-pop-up');
+        var gitRepository = {
+            name: $sshPassphrasePopUp.attr('gitRepositoryName'),
+            path: $sshPassphrasePopUp.attr('gitRepositoryPath'),
+            status: $sshPassphrasePopUp.attr('gitRepositoryStatus')
+        };
+
+        var password = $('#ssh-passphrase-pop-up-password').val();
+
+        $sshPassphrasePopUp.modal('hide');
+
+        checkIfRepositoryIsUpToDate(gitRepository, '', password);
+    });
 
     $('#credential-provider-pop-up-ok-btn').on("click", function () {
         var $credentialsPopUp = $('#credential-provider-pop-up');
@@ -346,6 +371,12 @@ $(document).ready(function () {
     $('#credential-provider-pop-up-password').keyup(function (event) {
         if (event.keyCode === 13) {
             $('#credential-provider-pop-up-ok-btn').click();
+        }
+    });
+
+    $('#ssh-passphrase-pop-up-password').keyup(function (event) {
+        if (event.keyCode === 13) {
+            $('#ssh-passphrase-pop-up-ok-btn').click();
         }
     });
 

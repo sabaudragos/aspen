@@ -1,20 +1,24 @@
 package xyz.codeark.service;
 
+import com.jcraft.jsch.Session;
+import com.jcraft.jsch.UserInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.PullResult;
 import org.eclipse.jgit.api.Status;
+import org.eclipse.jgit.api.TransportConfigCallback;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
 import org.eclipse.jgit.api.errors.TransportException;
+import org.eclipse.jgit.errors.UnsupportedCredentialItem;
 import org.eclipse.jgit.lib.BranchTrackingStatus;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
-import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
+import org.eclipse.jgit.transport.*;
 import org.springframework.stereotype.Service;
 import xyz.codeark.dto.GitRepository;
 import xyz.codeark.rest.RestConstants;
@@ -23,6 +27,7 @@ import xyz.codeark.rest.exceptions.AspenRestException;
 import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -31,6 +36,8 @@ import java.nio.file.Paths;
 public class GitServiceImpl implements GitService {
 
     private UsernamePasswordCredentialsProvider usernamePasswordCredentialsProvider;
+
+    private String sshPassphrase = "";
 
     @Override
     public GitRepository pull(GitRepository gitRepository, Boolean userRebase) {
@@ -50,21 +57,30 @@ public class GitServiceImpl implements GitService {
                     stash = createStash(git, gitRepository.getPath(), gitRepository.getName());
                 }
 
-                pullResult = git.pull()
-                        .setRebase(userRebase)
-                        .setCredentialsProvider(usernamePasswordCredentialsProvider)
-                        .call();
+                GitTransportProtocol gitTransportProtocol = getTransportProtocol(repository, gitRepository);
+
+                if (gitTransportProtocol.equals(GitTransportProtocol.HTTP)) {
+                    pullResult = git.pull()
+                            .setRebase(userRebase)
+                            .setCredentialsProvider(usernamePasswordCredentialsProvider)
+                            .call();
+                } else if (gitTransportProtocol.equals(GitTransportProtocol.SSH)) {
+                    pullResult = git.pull()
+                            .setRebase(userRebase)
+                            .setTransportConfigCallback(getTransportConfigCallback())
+                            .call();
+                }
 
                 if (pullResult.getRebaseResult().getStatus().isSuccessful()) {
                     BranchTrackingStatus branchTrackingStatus =
                             BranchTrackingStatus.of(repository, repository.getFullBranch());
 
-                    if ((branchTrackingStatus != null) && (branchTrackingStatus.getAheadCount() > 0)){
-                            // local branch NOT outdated, is ahead origin by branchTrackingStatus.getAheadCount()
-                            gitRepository.setStatus(RestConstants.GIT_REPOSITORY_IS_AHEAD_OF_ORIGIN);
-                            log.debug(RestConstants.GIT_REPOSITORY_IS_AHEAD_OF_ORIGIN + ": " + gitRepository.getName());
+                    if ((branchTrackingStatus != null) && (branchTrackingStatus.getAheadCount() > 0)) {
+                        // local branch NOT outdated, is ahead origin by branchTrackingStatus.getAheadCount()
+                        gitRepository.setStatus(RestConstants.GIT_REPOSITORY_IS_AHEAD_OF_ORIGIN);
+                        log.debug(RestConstants.GIT_REPOSITORY_IS_AHEAD_OF_ORIGIN + ": " + gitRepository.getName());
 
-                            return gitRepository;
+                        return gitRepository;
                     }
 
                     gitRepository.setStatus(RestConstants.GIT_PULL_SUCCESS);
@@ -93,6 +109,48 @@ public class GitServiceImpl implements GitService {
         return gitRepository;
     }
 
+    /**
+     * Configures the ssh config session
+     *
+     * @return
+     */
+    private TransportConfigCallback getTransportConfigCallback() {
+        SshSessionFactory sshSessionFactory = new JschConfigSessionFactory() {
+            @Override
+            protected void configure(OpenSshConfig.Host host, Session session) {
+                CredentialsProvider provider = new CredentialsProvider() {
+                    @Override
+                    public boolean isInteractive() {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean supports(CredentialItem... items) {
+                        return true;
+                    }
+
+                    @Override
+                    public boolean get(URIish uri, CredentialItem... items) throws UnsupportedCredentialItem {
+                        for (CredentialItem item : items) {
+                            ((CredentialItem.StringType) item).setValue(sshPassphrase);
+                        }
+                        return true;
+                    }
+                };
+                UserInfo userInfo = new CredentialsProviderUserInfo(session, provider);
+                session.setUserInfo(userInfo);
+            }
+        };
+
+        return new TransportConfigCallback() {
+            @Override
+            public void configure(Transport transport) {
+                SshTransport sshTransport = (SshTransport) transport;
+                sshTransport.setSshSessionFactory(sshSessionFactory);
+            }
+        };
+    }
+
     @Override
     public RevCommit createStash(Git git, String path, String name) {
         log.info("Git repo {} has uncommitted changes. Creating a stash", git.getRepository());
@@ -115,9 +173,12 @@ public class GitServiceImpl implements GitService {
         if (StringUtils.isNotEmpty(username) && StringUtils.isNotEmpty(password)) {
             // initialize the UsernamePasswordCredentialsProvider
             setUsernamePasswordCredentialsProvider(username, password);
+        } else if (StringUtils.isNotEmpty(password)) {
+            // initialize the sshPassphrase
+            sshPassphrase = password;
         }
 
-        String repositoryName =  new File(repositoryPath).getName();
+        String repositoryName = new File(repositoryPath).getName();
         GitRepository gitRepository = new GitRepository();
         gitRepository.setPath(repositoryPath);
         gitRepository.setName(repositoryName);
@@ -164,18 +225,46 @@ public class GitServiceImpl implements GitService {
         return gitRepository;
     }
 
+    /**
+     * Fetches branches for the repository located at the repositoryPath
+     *
+     * @param repository     the repository which branches will be fetched
+     * @param repositoryPath the repository path
+     * @param repositoryName the name of the repository
+     */
     private void fetchBranches(Repository repository, String repositoryPath, String repositoryName) {
         log.info(String.format("Fetching branches for repository: %s", repositoryName));
+        GitRepository gitRepository = new GitRepository();
+        gitRepository.setName(repositoryName);
+        gitRepository.setPath(repositoryPath);
+        gitRepository.setStatus("");
+
         try (Git git = new Git(repository)) {
+            GitTransportProtocol gitTransportProtocol = getTransportProtocol(repository, gitRepository);
+
+            if (gitTransportProtocol.equals(GitTransportProtocol.HTTP)) {
                 git.fetch()
                         .setCredentialsProvider(usernamePasswordCredentialsProvider)
                         .call();
+            } else if (gitTransportProtocol.equals(GitTransportProtocol.SSH)) {
+                git.fetch()
+                        .setTransportConfigCallback(getTransportConfigCallback())
+                        .call();
+            }
         } catch (InvalidRemoteException e) {
             logAndThrow(repositoryPath, repositoryName, RestConstants.ERROR_FETCHING_INVALID_REMOTE, e);
         } catch (TransportException e) {
             if (e.getCause().getMessage().contains("Authentication is required but no CredentialsProvider has been registered")) {
+                // extend/add if to cover the use case where the passphrase for the ssh key has to be provided
                 logAndThrow(repositoryPath, repositoryName,
                         RestConstants.ERROR_CONNECTING_TO_REMOTE_REPOSITOY_AUTHENTICATION_IS_REQUIRED,
+                        e);
+            }
+
+            if (e.getCause().getMessage().contains("Auth fail")) {
+                // extend/add if to cover the use case where the passphrase for the ssh key has to be provided
+                logAndThrow(repositoryPath, repositoryName,
+                        RestConstants.ERROR_CONNECTING_TO_REMOTE_REPOSITOY_AUTH_FAIL,
                         e);
             }
 
@@ -195,6 +284,13 @@ public class GitServiceImpl implements GitService {
         throw new AspenRestException(errorMessage, Response.Status.ACCEPTED, repositoryPath, repositoryName);
     }
 
+    /**
+     * Builds a Repository object based on the path provided
+     *
+     * @param repositoryPath the path to the git repository
+     * @return the Repository object
+     * @throws IOException
+     */
     private Repository getJGitRepository(String repositoryPath) throws IOException {
         // the .git directory inside the repository
         Path gitRepositoryConfigPath = Paths.get(repositoryPath, ".git");
@@ -206,7 +302,40 @@ public class GitServiceImpl implements GitService {
                 .build();
     }
 
-    private void setUsernamePasswordCredentialsProvider(String username, String password){
+    private void setUsernamePasswordCredentialsProvider(String username, String password) {
         usernamePasswordCredentialsProvider = new UsernamePasswordCredentialsProvider(username, password);
+    }
+
+    /**
+     * Fetches the transport protocol used to communicate with origin
+     *
+     * @param repository    jgit repository object
+     * @param gitRepository holds the repository path, name and status
+     * @return
+     */
+    private GitTransportProtocol getTransportProtocol(Repository repository, GitRepository gitRepository) {
+        log.debug("Getting the transport protocol");
+        try {
+            for (TransportProtocol transportProtocol : TransportGitSsh.getTransportProtocols()) {
+                boolean canHandle = transportProtocol
+                        .canHandle(new URIish(repository.getConfig().getString("remote", "origin", "url")));
+
+                if (canHandle) {
+                    GitTransportProtocol gitTransportProtocol =
+                            GitTransportProtocol.valueOf(transportProtocol.getName());
+                    log.debug("Found the transport protocol {}", gitTransportProtocol.name());
+                    return gitTransportProtocol;
+                }
+            }
+        } catch (URISyntaxException e) {
+            logAndThrow(gitRepository.getPath(), gitRepository.getName(),
+                    RestConstants.ERROR_WHILE_GETTING_THE_TRANSPORT_PROTOCOL,
+                    e);
+        }
+
+        throw new AspenRestException(RestConstants.NO_SUPPORTED_TRANSPORT_PROTOCOL_FOUND,
+                Response.Status.ACCEPTED,
+                gitRepository.getPath(),
+                gitRepository.getName());
     }
 }

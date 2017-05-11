@@ -39,7 +39,7 @@
         </div>
     </div>
 
-    <!-- Modal -->
+    <!-- Modal credential provider username and password -->
     <div class="modal fade" id="credential-provider-pop-up" role="dialog">
         <div class="modal-dialog modal-md">
             <!-- Modal content-->
@@ -56,6 +56,28 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                     <button type="button" class="btn btn-primary" data-dismiss="modal" id="credential-provider-pop-up-ok-btn">Submit</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Modal ssh passphrase -->
+    <div class="modal fade" id="ssh-passphrase-pop-up" role="dialog">
+        <div class="modal-dialog modal-md">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Repository credentials</h4>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <input type="password" class="form-control" name="passphrase" id="ssh-passphrase-pop-up-password" placeholder="passphrase">
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" data-dismiss="modal" id="ssh-passphrase-pop-up-ok-btn">Submit</button>
                 </div>
             </div>
 

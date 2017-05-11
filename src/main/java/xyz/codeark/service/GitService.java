@@ -19,7 +19,7 @@ public interface GitService {
     GitRepository pull(GitRepository gitRepository, Boolean userRebase);
 
     /**
-     * Creates a stash of the changes found in the
+     * Creates a stash of the changes found in the repository
      *
      * @param git   the git repository
      * @param path  the git repository's path
