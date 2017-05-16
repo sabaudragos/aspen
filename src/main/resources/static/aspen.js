@@ -41,6 +41,8 @@ $(document).ready(function () {
     var BTN_DANGER ='btn-danger';
     var BTN_DEFAULT ='btn-default';
 
+    var gitRepositoriesGlobal;
+
     // initialize all tooltips -- NOT WORKING
     $("[data-toggle=tooltip]").tooltip();
 
@@ -63,11 +65,12 @@ $(document).ready(function () {
                         removeDiscoveredDirectories();
                     } else {
                         removeExistingMessage();
+                        gitRepositoriesGlobal = result.Git_repositories;
                         displayRepositories(result.Git_repositories);
                         displayMavenModules(result.Maven_modules);
 
                         // trigger git up to date check for repositories
-                        checkIfRepositoriesAreUpToDate(result.Git_repositories);
+                        checkIfRepositoriesAreUpToDate("", "");
                     }
                 },
                 202: function (result) {
@@ -280,9 +283,9 @@ $(document).ready(function () {
             "title=\"Pending status check!\"></span>";
     }
 
-    function checkIfRepositoriesAreUpToDate(gitRepositories) {
-        for (var i = 0; i < gitRepositories.length; i++) {
-            checkIfRepositoryIsUpToDate(gitRepositories[i]);
+    function checkIfRepositoriesAreUpToDate(username, password) {
+        for (var i = 0; i < gitRepositoriesGlobal.length; i++) {
+            checkIfRepositoryIsUpToDate(gitRepositoriesGlobal[i], username, password);
         }
     }
 
@@ -309,20 +312,26 @@ $(document).ready(function () {
                         // display a pop up asking for credentials (username and password)
                         // The following repository requires authentication. Please provide a username and password
                         var $credentialsPopUp = $('#credential-provider-pop-up');
-                        $('.modal-title').html("\"" + gitRepository.name + "\" repository credentials");
-                        $credentialsPopUp.modal('show');
-                        $credentialsPopUp.attr('gitRepositoryName', gitRepository.name);
-                        $credentialsPopUp.attr('gitRepositoryPath', gitRepository.path);
-                        $credentialsPopUp.attr('gitRepositoryStatus', gitRepository.status);
+                        if (!$('#ssh-passphrase-pop-up').hasClass('in')) {
+                            // only display credential provider modal if the ssh modal is not displayed
+                            $('.modal-title').html("\"" + gitRepository.name + "\" repository credentials");
+                            $credentialsPopUp.modal('show');
+                            $credentialsPopUp.attr('gitRepositoryName', gitRepository.name);
+                            $credentialsPopUp.attr('gitRepositoryPath', gitRepository.path);
+                            $credentialsPopUp.attr('gitRepositoryStatus', gitRepository.status);
+                        }
                     } else if (result.status === ERROR_CONNECTING_TO_REMOTE_REPOSITOY_AUTH_FAIL) {
                         // display a pop up asking for credentials (ssh passphrase)
                         // The following repository requires authentication. Please provide a username and password
-                        var $sshPassphrasePopUp = $('#ssh-passphrase-pop-up');
-                        $('.modal-title').html("\"" + gitRepository.name + "\" requires the ssh passphrase");
-                        $sshPassphrasePopUp.modal('show');
-                        $sshPassphrasePopUp.attr('gitRepositoryName', gitRepository.name);
-                        $sshPassphrasePopUp.attr('gitRepositoryPath', gitRepository.path);
-                        $sshPassphrasePopUp.attr('gitRepositoryStatus', gitRepository.status);
+                        if (!$('#credential-provider-pop-up').hasClass('in')) {
+                            // only display ssh modal if the credential provider modal is not displayed
+                            var $sshPassphrasePopUp = $('#ssh-passphrase-pop-up');
+                            $('.modal-title').html("\"" + gitRepository.name + "\" requires the ssh passphrase");
+                            $sshPassphrasePopUp.modal('show');
+                            $sshPassphrasePopUp.attr('gitRepositoryName', gitRepository.name);
+                            $sshPassphrasePopUp.attr('gitRepositoryPath', gitRepository.path);
+                            $sshPassphrasePopUp.attr('gitRepositoryStatus', gitRepository.status);
+                        }
                     } else {
                         var $gitRepositorySelector = $("#git-repository-img-" + result.name);
                         $gitRepositorySelector.before(getGitRepositoryStatus(result));
@@ -339,33 +348,22 @@ $(document).ready(function () {
 
     $('#ssh-passphrase-pop-up-ok-btn').on("click", function () {
         var $sshPassphrasePopUp = $('#ssh-passphrase-pop-up');
-        var gitRepository = {
-            name: $sshPassphrasePopUp.attr('gitRepositoryName'),
-            path: $sshPassphrasePopUp.attr('gitRepositoryPath'),
-            status: $sshPassphrasePopUp.attr('gitRepositoryStatus')
-        };
-
         var password = $('#ssh-passphrase-pop-up-password').val();
 
         $sshPassphrasePopUp.modal('hide');
 
-        checkIfRepositoryIsUpToDate(gitRepository, '', password);
+        checkIfRepositoriesAreUpToDate('', password);
     });
 
     $('#credential-provider-pop-up-ok-btn').on("click", function () {
         var $credentialsPopUp = $('#credential-provider-pop-up');
-        var gitRepository = {
-            name: $credentialsPopUp.attr('gitRepositoryName'),
-            path: $credentialsPopUp.attr('gitRepositoryPath'),
-            status: $credentialsPopUp.attr('gitRepositoryStatus')
-        };
 
         var username = $('#credential-provider-pop-up-username').val();
         var password = $('#credential-provider-pop-up-password').val();
 
         $credentialsPopUp.modal('hide');
 
-        checkIfRepositoryIsUpToDate(gitRepository, username, password);
+        checkIfRepositoriesAreUpToDate(username, password);
     });
 
     $('#credential-provider-pop-up-password').keyup(function (event) {
