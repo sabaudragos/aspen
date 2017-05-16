@@ -255,14 +255,12 @@ public class GitServiceImpl implements GitService {
             logAndThrow(repositoryPath, repositoryName, RestConstants.ERROR_FETCHING_INVALID_REMOTE, e);
         } catch (TransportException e) {
             if (e.getCause().getMessage().contains("Authentication is required but no CredentialsProvider has been registered")) {
-                // extend/add if to cover the use case where the passphrase for the ssh key has to be provided
                 logAndThrow(repositoryPath, repositoryName,
                         RestConstants.ERROR_CONNECTING_TO_REMOTE_REPOSITOY_AUTHENTICATION_IS_REQUIRED,
                         e);
             }
 
             if (e.getCause().getMessage().contains("Auth fail")) {
-                // extend/add if to cover the use case where the passphrase for the ssh key has to be provided
                 logAndThrow(repositoryPath, repositoryName,
                         RestConstants.ERROR_CONNECTING_TO_REMOTE_REPOSITOY_AUTH_FAIL,
                         e);
