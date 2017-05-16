@@ -266,6 +266,12 @@ public class GitServiceImpl implements GitService {
                         e);
             }
 
+            if (e.getCause().getMessage().contains(": not authorized")) {
+                logAndThrow(repositoryPath, repositoryName,
+                        RestConstants.ERROR_CONNECTING_TO_REMOTE_REPOSITOY_AUTHENTICATION_IS_REQUIRED,
+                        e);
+            }
+
             logAndThrow(repositoryPath, repositoryName, RestConstants.ERROR_FETCHING_TRANSPORT_FAILED, e);
         } catch (GitAPIException e) {
             logAndThrow(repositoryPath, repositoryName, RestConstants.ERROR_FETCHING_GITAPI_EXCEPTION, e);
