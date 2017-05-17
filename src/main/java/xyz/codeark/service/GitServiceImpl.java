@@ -71,6 +71,13 @@ public class GitServiceImpl implements GitService {
                             .call();
                 }
 
+                //TODO: should stash be applied even when an exception happens
+                if (stash != null) {
+                    log.info("Applying stash");
+                    ObjectId appliedStashId = git.stashApply().setStashRef(stash.getName()).call();
+                    log.info("Stash with ID {} was applied successfully", appliedStashId);
+                }
+
                 if (pullResult.getRebaseResult().getStatus().isSuccessful()) {
                     BranchTrackingStatus branchTrackingStatus =
                             BranchTrackingStatus.of(repository, repository.getFullBranch());
@@ -86,13 +93,6 @@ public class GitServiceImpl implements GitService {
                     gitRepository.setStatus(RestConstants.GIT_PULL_SUCCESS);
 
                     return gitRepository;
-                }
-
-                //TODO: should stash be applied even when an exception happens
-                if (stash != null) {
-                    log.info("Applying stash");
-                    ObjectId appliedStashId = git.stashApply().setStashRef(stash.getName()).call();
-                    log.info("Stash with ID {} was applied successfully", appliedStashId);
                 }
             } catch (GitAPIException e) {
                 logAndThrow(gitRepository.getPath(), gitRepository.getName(), RestConstants.GIT_ERROR_WHILE_UPDATING_REPOSITORY, e);
